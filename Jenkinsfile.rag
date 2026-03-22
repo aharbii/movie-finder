@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'QDRANT_URL', defaultValue: 'http://localhost:6333', description: 'Qdrant Instance URL')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                sh 'git submodule update --init backend'
+            }
+        }
+
+        stage('Setup Environment') {
+            steps {
+                dir('backend') {
+                    sh 'uv sync'
+                }
+            }
+        }
+
+        stage('Download & Ingest') {
+            steps {
+                dir('backend') {
+                    echo "Starting RAG ingestion pipeline using uv..."
+                    sh "uv run python rag_ingestion/ingest.py --qdrant ${params.QDRANT_URL}"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Wikipedia movie plots successfully embedded and ingested to Qdrant."
+        }
+        failure {
+            echo "RAG ingestion failed!"
+        }
+    }
+}
