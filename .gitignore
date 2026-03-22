@@ -1,0 +1,6 @@
+# Core root ignores for IDEs and system files
+.DS_Store
+.vscode/
+.idea/
+.env
+*~
