@@ -1,10 +1,14 @@
 # =============================================================================
-# movie-finder — full-stack docker-compose
+# movie-finder — full-stack docker-compose (local development)
 #
 # Services:
-#   qdrant    — vector store (Qdrant OSS)
+#   postgres  — session / user database (PostgreSQL)
 #   backend   — FastAPI + LangGraph application
 #   frontend  — Angular SPA served by nginx (reverse-proxies API to backend)
+#
+# Qdrant is NOT included here. Both backend and frontend always connect to
+# the production Qdrant Cloud cluster via QDRANT_ENDPOINT / QDRANT_API_KEY.
+# There is no local Qdrant container.
 #
 # Usage:
 #   cp .env.example .env && $EDITOR .env   # fill in secrets
@@ -19,23 +23,25 @@
 services:
 
   # ---------------------------------------------------------------------------
-  # Qdrant — vector store
-  # Production: use Qdrant Cloud (set QDRANT_ENDPOINT + QDRANT_API_KEY in .env)
-  # Development: use this local container
+  # PostgreSQL — session and user database
   # ---------------------------------------------------------------------------
-  qdrant:
-    image: qdrant/qdrant:v1.13.0
-    container_name: movie-finder-qdrant
+  postgres:
+    image: postgres:16-alpine
+    container_name: movie-finder-postgres
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-movie_finder}
+      POSTGRES_USER:     ${DB_USER:-movie_finder}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
-      - "6333:6333"
+      - "5432:5432"
     volumes:
-      - qdrant_data:/qdrant/storage
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-movie_finder} -d ${DB_NAME:-movie_finder}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 10s
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
@@ -53,14 +59,16 @@ services:
     env_file:
       - .env
     environment:
-      # Override Qdrant to use the local container in dev
-      QDRANT_ENDPOINT: "http://qdrant:6333"
-      QDRANT_API_KEY: ""
+      # Override DATABASE_URL so backend reaches the compose postgres service
+      DATABASE_URL: "postgresql://${DB_USER:-movie_finder}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-movie_finder}"
     depends_on:
-      qdrant:
+      postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      test:
+        - "CMD-SHELL"
+        - |
+          python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"
       interval: 15s
       timeout: 5s
       retries: 5
@@ -89,5 +97,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  qdrant_data:
-    name: movie-finder-qdrant-data
+  postgres_data:
+    name: movie-finder-postgres-data
