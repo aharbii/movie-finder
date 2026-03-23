@@ -1,0 +1,101 @@
+# =============================================================================
+# movie-finder — full-stack docker-compose (local development)
+#
+# Services:
+#   postgres  — session / user database (PostgreSQL)
+#   backend   — FastAPI + LangGraph application
+#   frontend  — Angular SPA served by nginx (reverse-proxies API to backend)
+#
+# Qdrant is NOT included here. Both backend and frontend always connect to
+# the production Qdrant Cloud cluster via QDRANT_ENDPOINT / QDRANT_API_KEY.
+# There is no local Qdrant container.
+#
+# Usage:
+#   cp .env.example .env && $EDITOR .env   # fill in secrets
+#   docker compose up --build              # build and start everything
+#   docker compose up frontend             # only frontend + its deps
+#   docker compose logs -f backend         # stream backend logs
+#
+# Submodules must be initialised before building:
+#   git submodule update --init --recursive
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — session and user database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: movie-finder-postgres
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-movie_finder}
+      POSTGRES_USER:     ${DB_USER:-movie_finder}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-movie_finder} -d ${DB_NAME:-movie_finder}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Backend — FastAPI application
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    image: movie-finder-backend:local
+    container_name: movie-finder-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL so backend reaches the compose postgres service
+      DATABASE_URL: "postgresql://${DB_USER:-movie_finder}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-movie_finder}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - |
+          python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Frontend — Angular SPA + nginx reverse-proxy
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+    image: movie-finder-frontend:local
+    container_name: movie-finder-frontend
+    ports:
+      - "80:80"
+    environment:
+      # Empty string = same-origin; nginx proxies /auth /chat /health to backend
+      API_URL: ""
+      BACKEND_URL: "http://backend:8000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: movie-finder-postgres-data
