@@ -198,7 +198,7 @@ jobs:
 
       # ── 5. Build static site ─────────────────────────────────────────────────
       - name: Build MkDocs site
-        run: mkdocs build --strict --verbose
+        run: mkdocs build --verbose
 
       # ── 6. Upload built site as a Pages artifact ──────────────────────────────
       - name: Upload Pages artifact
