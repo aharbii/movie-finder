@@ -24,9 +24,13 @@ on:
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Permissions
+# pages: write + id-token: write are required by actions/deploy-pages.
+# contents: read is sufficient — no branch push needed.
 # ─────────────────────────────────────────────────────────────────────────────
 permissions:
-  contents: write  # needed by mkdocs gh-deploy to push to gh-pages branch
+  contents: read
+  pages: write
+  id-token: write
 
 # Cancel in-progress runs when a newer commit arrives
 concurrency:
@@ -37,14 +41,14 @@ concurrency:
 # Jobs
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
-  build-and-deploy:
-    name: Build & deploy MkDocs site
+  build:
+    name: Build MkDocs site
     runs-on: ubuntu-latest
 
     steps:
       # ── 1. Checkout with all submodules ─────────────────────────────────────
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           submodules: recursive
           fetch-depth: 0      # full history required for git-revision-date plugin
@@ -52,7 +56,7 @@ jobs:
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.13"
           cache: pip
@@ -192,18 +196,29 @@ jobs:
           echo "Generated pages ready:"
           ls -la docs/onboarding.md docs/contributing/ docs/services/
 
-      # ── 5. Build and deploy to GitHub Pages ─────────────────────────────────
-      - name: Configure git identity and credentials for gh-deploy
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Rewrite all github.com HTTPS URLs globally so ghp_import's push uses the PAT.
-          # global scope is required because ghp_import pushes from a temp directory
-          # where the repo-local credential helper set by actions/checkout does not apply.
-          git config --global url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+      # ── 5. Build static site ─────────────────────────────────────────────────
+      - name: Build MkDocs site
+        run: mkdocs build --strict --verbose
 
-      - name: Build and deploy MkDocs site
-        run: mkdocs gh-deploy --force --clean --verbose
-        # Pushes the built site to the gh-pages branch.
-        # Configure GitHub Pages to serve from that branch in:
-        #   Settings → Pages → Source → Deploy from branch → gh-pages / root
+      # ── 6. Upload built site as a Pages artifact ──────────────────────────────
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+  # ── Deploy job ───────────────────────────────────────────────────────────────
+  # Runs after build. Uses GITHUB_TOKEN via the Pages deployment API —
+  # no PAT or branch push required.
+  # Prerequisite: Settings → Pages → Source → GitHub Actions
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
