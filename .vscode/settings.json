@@ -1,0 +1,19 @@
+{
+  // ── PlantUML ────────────────────────────────────────────────────────────────
+  // Uses the stable keg symlink — survives `brew upgrade plantuml`.
+  // macOS/Homebrew: install with `brew install plantuml graphviz`
+  // Linux (apt):    install with `sudo apt install plantuml graphviz`
+  //                 then change the path to `plantuml.jar` accordingly.
+  "plantuml.jar": "/opt/homebrew/opt/plantuml/libexec/plantuml.jar",
+  "plantuml.render": "Local",
+  "plantuml.exportFormat": "png",
+  "plantuml.exportSubFolder": false,
+  "plantuml.previewAutoUpdate": true,
+  "plantuml.fileExtensions": ".puml",
+
+  // ── Editor defaults for .puml files ────────────────────────────────────────
+  "[plantuml]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on"
+  }
+}

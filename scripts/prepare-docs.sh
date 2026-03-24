@@ -178,6 +178,24 @@ rewrite_links "$DOCS_DIR/contributing/frontend.md" \
   's|](docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
   's|](\.\.\/README\.md)|](../services/frontend.md)|g'
 
+# ── Render PlantUML diagrams ──────────────────────────────────────────────────
+# Source files (*.puml) are committed; PNGs are generated here and gitignored.
+# Requires: brew install plantuml graphviz  (macOS)
+#           sudo apt install plantuml graphviz  (Debian/Ubuntu)
+PLANTUML_DIR="$DOCS_DIR/architecture/plantuml"
+
+if command -v plantuml &>/dev/null; then
+  echo "Rendering PlantUML diagrams..."
+  plantuml -png -DPLANTUML_LIMIT_SIZE=8192 "$PLANTUML_DIR"/*.puml
+  png_count=$(find "$PLANTUML_DIR" -name "*.png" | wc -l | tr -d ' ')
+  echo "  → $png_count PNG files written to $PLANTUML_DIR"
+else
+  echo "WARNING: plantuml not found — architecture diagrams will not render."
+  echo "         macOS:  brew install plantuml graphviz"
+  echo "         Ubuntu: sudo apt install plantuml graphviz"
+  echo "         Docs will build but diagram images will be broken links."
+fi
+
 # ── Done ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "Done. Generated pages:"
