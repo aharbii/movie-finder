@@ -1,15 +1,15 @@
 [submodule "backend"]
 	path = backend
-	url = https://github.com/aharbii/movie-finder-backend.git
+	url = ../movie-finder-backend.git
 
 [submodule "frontend"]
 	path = frontend
-	url = https://github.com/aharbii/movie-finder-frontend.git
+	url = ../movie-finder-frontend.git
 
 [submodule "docs"]
 	path = docs
-	url = https://github.com/aharbii/movie-finder-docs.git
+	url = ../movie-finder-docs.git
 
 [submodule "infrastructure"]
 	path = infrastructure
-	url = https://github.com/aharbii/movie-finder-infrastructure.git
+	url = ../movie-finder-infrastructure.git
