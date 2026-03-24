@@ -48,6 +48,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0      # full history required for git-revision-date plugin
+          token: ${{ secrets.GH_PAT }}  # PAT with repo scope — required to clone private submodules
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
