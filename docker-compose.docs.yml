@@ -2,7 +2,7 @@
 # movie-finder — documentation tooling compose
 #
 # Services:
-#   structurizr  — Structurizr Lite C4 architecture viewer
+#   structurizr  — Structurizr Local C4 architecture viewer
 #
 # Usage:
 #   docker compose -f docker-compose.docs.yml up
@@ -25,10 +25,11 @@ services:
   #   System Context · Containers · FastAPI Components · Azure Deployment · Local Deployment
   # ---------------------------------------------------------------------------
   structurizr:
-    image: structurizr/lite
+    image: structurizr/structurizr:latest
     container_name: movie-finder-structurizr
+    command: local
     ports:
       - "18080:8080"
     volumes:
-      - ./docs/architecture:/usr/local/structurizr:ro
+      - ./docs/architecture:/usr/local/structurizr
     restart: "no"
