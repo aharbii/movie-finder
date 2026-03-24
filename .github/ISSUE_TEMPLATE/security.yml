@@ -1,0 +1,91 @@
+name: "Security Vulnerability"
+description: "Auth bypass, token issues, injection risks, missing validation, or other security concerns."
+title: "[SECURITY] <short description>"
+labels: ["security", "high"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Security Vulnerability
+        Use this template for security-related findings: authentication flaws, missing rate limits,
+        injection risks, exposed secrets, missing input validation, etc.
+
+        > **Note:** For critical zero-day vulnerabilities with active exploit potential,
+        > consider using GitHub's private security advisory instead of a public issue.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected component"
+      options:
+        - "movie-finder-backend  (FastAPI app, auth, session store)"
+        - "movie-finder-chain    (LangGraph pipeline)"
+        - "imdbapi-client        (IMDb REST API client)"
+        - "movie-finder-rag      (RAG ingestion pipeline)"
+        - "movie-finder-frontend (Angular SPA)"
+        - "movie-finder-infrastructure (IaC / provisioning)"
+        - "cross-cutting         (affects multiple repos)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      options:
+        - "critical – auth bypass / data breach possible"
+        - "high     – token theft / privilege escalation possible"
+        - "medium   – information disclosure / abuse of functionality"
+        - "low      – defence-in-depth / hardening improvement"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Vulnerability category"
+      options:
+        - "authentication   – login, token validation"
+        - "authorisation    – access control, ownership checks"
+        - "session          – token lifecycle, refresh, revocation"
+        - "rate-limiting    – brute force, API cost abuse"
+        - "input-validation – injection, oversized payloads"
+        - "secrets          – leaked keys, weak secrets"
+        - "dependency       – vulnerable third-party package"
+        - "infrastructure   – misconfigured cloud resource"
+        - "other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Describe the vulnerability and the attack scenario."
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact"
+      placeholder: "Who is affected and what can an attacker achieve?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: "Proposed fix"
+    validations:
+      required: false
+
+  - type: textarea
+    id: linked_issues
+    attributes:
+      label: "Linked submodule issue"
+      description: "Once a work-item issue is opened in the submodule repo, paste its URL here."
+      placeholder: "https://github.com/aharbii/<submodule-repo>/issues/<N>"
+    validations:
+      required: false

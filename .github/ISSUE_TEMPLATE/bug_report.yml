@@ -1,0 +1,94 @@
+name: "Bug Report"
+description: "A runtime defect, unexpected behaviour, or incorrect output in any component."
+title: "[BUG] <short description>"
+labels: ["bug"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Use this template for runtime defects, incorrect output, or unexpected behaviour.
+        After filing here, a linked work-item issue will be opened in the relevant submodule repo.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected component"
+      description: "Which repo owns this bug?"
+      options:
+        - "movie-finder-backend  (FastAPI app, auth, session store)"
+        - "movie-finder-chain    (LangGraph pipeline)"
+        - "imdbapi-client        (IMDb REST API client)"
+        - "movie-finder-rag      (RAG ingestion pipeline)"
+        - "movie-finder-frontend (Angular SPA)"
+        - "movie-finder-docs     (Documentation)"
+        - "movie-finder-infrastructure (IaC / provisioning)"
+        - "cross-cutting         (affects multiple repos)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      options:
+        - "critical – data loss / security breach / service down"
+        - "high     – major feature broken, no workaround"
+        - "medium   – feature degraded, workaround exists"
+        - "low      – cosmetic / minor inconvenience"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What is happening vs what should happen?"
+      placeholder: |
+        **Actual behaviour:**
+        …
+        **Expected behaviour:**
+        …
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to reproduce"
+      placeholder: |
+        1. Start the backend with `make run-dev`
+        2. POST /auth/login with …
+        3. Observe …
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      placeholder: |
+        - Python version: 3.13.x
+        - Branch / commit: main @ abc1234
+        - Docker / local: local
+        - OS: macOS 15.x
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Relevant logs or screenshots"
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: linked_issues
+    attributes:
+      label: "Linked submodule issue"
+      description: "Once a work-item issue is opened in the submodule repo, paste its URL here."
+      placeholder: "https://github.com/aharbii/<submodule-repo>/issues/<N>"
+    validations:
+      required: false

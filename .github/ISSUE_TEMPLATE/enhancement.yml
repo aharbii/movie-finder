@@ -1,0 +1,83 @@
+name: "Enhancement / Future Work"
+description: "New features, improvements, or items from the future-work backlog."
+title: "[FEAT] <short description>"
+labels: ["enhancement"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Enhancement / Future Work
+        Use this template for planned improvements, new capabilities, or backlog items.
+        After filing here, a linked work-item issue will be opened in the relevant submodule repo.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Target component"
+      options:
+        - "movie-finder-backend  (FastAPI app, auth, session store)"
+        - "movie-finder-chain    (LangGraph pipeline)"
+        - "imdbapi-client        (IMDb REST API client)"
+        - "movie-finder-rag      (RAG ingestion pipeline)"
+        - "movie-finder-frontend (Angular SPA)"
+        - "movie-finder-docs     (Documentation)"
+        - "movie-finder-infrastructure (IaC / provisioning)"
+        - "cross-cutting         (affects multiple repos)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      options:
+        - "critical – needed before next public release"
+        - "high     – significant value, deliver in current sprint"
+        - "medium   – worthwhile, schedule in near term"
+        - "low      – nice to have, backlog"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What should be built and why?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation / problem being solved"
+      placeholder: "e.g. Without a PostgreSQL-backed LangGraph checkpointer, the system loses all in-flight sessions on every backend restart."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: "Acceptance criteria"
+      placeholder: |
+        - [ ] Checkpointer uses langgraph-checkpoint-postgres in production
+        - [ ] Conversation state survives backend restart
+        - [ ] All app tests pass
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Additional notes / references"
+    validations:
+      required: false
+
+  - type: textarea
+    id: linked_issues
+    attributes:
+      label: "Linked submodule issue"
+      description: "Once a work-item issue is opened in the submodule repo, paste its URL here."
+      placeholder: "https://github.com/aharbii/<submodule-repo>/issues/<N>"
+    validations:
+      required: false

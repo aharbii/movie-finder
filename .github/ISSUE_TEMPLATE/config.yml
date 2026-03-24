@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Architecture Decision Records
+    url: https://github.com/aharbii/movie-finder-docs/tree/main/architecture/decisions
+    about: Check the ADRs before opening a design-level issue.
+  - name: Onboarding Guide
+    url: https://github.com/aharbii/movie-finder/blob/main/ONBOARDING.md
+    about: Setup problems? Check the onboarding guide first.

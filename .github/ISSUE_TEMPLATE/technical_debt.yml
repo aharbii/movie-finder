@@ -1,0 +1,102 @@
+name: "Technical Debt / Design Flaw"
+description: "Architectural, design, or implementation quality issues found in code review or audit."
+title: "[DEBT] <short description>"
+labels: ["technical-debt"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Technical Debt / Design Flaw
+        Use this template for issues found during code review or architecture audit —
+        incorrect design decisions, missing indexes, poor abstractions, missing migrations, etc.
+        After filing here, a linked work-item issue will be opened in the relevant submodule repo.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected component"
+      options:
+        - "movie-finder-backend  (FastAPI app, auth, session store)"
+        - "movie-finder-chain    (LangGraph pipeline)"
+        - "imdbapi-client        (IMDb REST API client)"
+        - "movie-finder-rag      (RAG ingestion pipeline)"
+        - "movie-finder-frontend (Angular SPA)"
+        - "movie-finder-docs     (Documentation)"
+        - "movie-finder-infrastructure (IaC / provisioning)"
+        - "cross-cutting         (affects multiple repos)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      options:
+        - "critical – production blocker, must fix before next release"
+        - "high     – significant risk or performance impact"
+        - "medium   – moderate risk, should fix in near term"
+        - "low      – minor quality issue, fix when convenient"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Category"
+      options:
+        - "architecture   – structural / design decision"
+        - "database        – schema, indexes, migrations"
+        - "security        – auth, tokens, input validation"
+        - "performance     – latency, concurrency, connection pooling"
+        - "reliability     – error handling, retries, fallbacks"
+        - "observability   – logging, metrics, tracing"
+        - "testing         – coverage gaps, test quality"
+        - "devops          – CI/CD, Docker, deployment"
+        - "api-design      – REST contract, OpenAPI spec"
+        - "agentic-ai      – LLM pipeline, RAG, embeddings"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What is the problem and why does it matter?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: "File / line reference"
+      placeholder: |
+        backend/chain/src/chain/graph.py:192
+        backend/app/src/app/session/store.py:52–83
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact if not fixed"
+      placeholder: "e.g. MemorySaver loses all in-flight sessions on replica restart or scale-out event."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: "Proposed fix / approach"
+      placeholder: "e.g. Replace MemorySaver with langgraph-checkpoint-postgres."
+    validations:
+      required: false
+
+  - type: textarea
+    id: linked_issues
+    attributes:
+      label: "Linked submodule issue"
+      description: "Once a work-item issue is opened in the submodule repo, paste its URL here."
+      placeholder: "https://github.com/aharbii/<submodule-repo>/issues/<N>"
+    validations:
+      required: false
