@@ -193,10 +193,12 @@ jobs:
           ls -la docs/onboarding.md docs/contributing/ docs/services/
 
       # ── 5. Build and deploy to GitHub Pages ─────────────────────────────────
-      - name: Configure git identity for gh-deploy
+      - name: Configure git identity and remote for gh-deploy
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Embed PAT so mkdocs gh-deploy can push to gh-pages
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/aharbii/movie-finder.git
 
       - name: Build and deploy MkDocs site
         run: mkdocs gh-deploy --force --clean --verbose
