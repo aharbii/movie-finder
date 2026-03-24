@@ -1,0 +1,204 @@
+name: Deploy Documentation
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: [main]
+    paths:
+      # Docs source
+      - "docs/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      # Root-level files whose content is pulled into docs
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "ONBOARDING.md"
+      # Submodule README files (pointer changes trigger a full rebuild)
+      - "backend"
+      - "frontend"
+
+  # Allow manual trigger from the GitHub Actions UI
+  workflow_dispatch:
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Permissions
+# ─────────────────────────────────────────────────────────────────────────────
+permissions:
+  contents: write  # needed by mkdocs gh-deploy to push to gh-pages branch
+
+# Cancel in-progress runs when a newer commit arrives
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Jobs
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  build-and-deploy:
+    name: Build & deploy MkDocs site
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout with all submodules ─────────────────────────────────────
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0      # full history required for git-revision-date plugin
+
+      # ── 2. Set up Python ────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      # ── 3. Install MkDocs and plugins ───────────────────────────────────────
+      - name: Install documentation dependencies
+        run: pip install -r requirements-docs.txt
+
+      # ── 4. Populate generated pages from submodules ─────────────────────────
+      #
+      # Files marked "generated" in mkdocs.yml are sourced from submodule READMEs.
+      # They are not committed to docs/ — this step creates them at build time.
+      # ─────────────────────────────────────────────────────────────────────────
+      - name: Prepare generated documentation pages
+        run: |
+          set -euo pipefail
+
+          # Ensure target directories exist
+          mkdir -p docs/services docs/contributing
+
+          # ── onboarding.md ────────────────────────────────────────────────────
+          cp ONBOARDING.md docs/onboarding.md
+          sed -i \
+            -e 's|](backend/README\.md)|](services/backend.md)|g' \
+            -e 's|](frontend/README\.md)|](services/frontend.md)|g' \
+            -e 's|](backend/chain/README\.md)|](services/chain.md)|g' \
+            -e 's|](backend/imdbapi/README\.md)|](services/imdbapi.md)|g' \
+            -e 's|](backend/rag_ingestion/README\.md)|](services/rag-ingestion.md)|g' \
+            -e 's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
+            -e 's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
+            -e 's|](docs/devops-setup\.md\b|](devops/setup.md|g' \
+            -e 's|](docs/devops/setup\.md)|](devops/setup.md)|g' \
+            -e 's|](docs/architecture/|](architecture/|g' \
+            -e 's|](docs/api/|](api/|g' \
+            docs/onboarding.md
+
+          # ── contributing/index.md ─────────────────────────────────────────────
+          cp CONTRIBUTING.md docs/contributing/index.md
+          sed -i \
+            -e 's|](ONBOARDING\.md)|](../onboarding.md)|g' \
+            -e 's|](backend/CONTRIBUTING\.md)|](backend.md)|g' \
+            -e 's|](frontend/CONTRIBUTING\.md)|](frontend.md)|g' \
+            -e 's|](backend/README\.md)|](../services/backend.md)|g' \
+            -e 's|](frontend/README\.md)|](../services/frontend.md)|g' \
+            -e 's|](backend/chain/README\.md)|](../services/chain.md)|g' \
+            -e 's|](backend/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
+            -e 's|](backend/rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+            -e 's|](docs/devops-setup\.md\b|](../devops/setup.md|g' \
+            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/architecture/|](../architecture/|g' \
+            -e 's|](docs/api/|](../api/|g' \
+            -e 's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
+            docs/contributing/index.md
+
+          # ── services/backend.md ───────────────────────────────────────────────
+          cp backend/README.md docs/services/backend.md
+          sed -i \
+            -e 's|](chain/README\.md)|](chain.md)|g' \
+            -e 's|](imdbapi/README\.md)|](imdbapi.md)|g' \
+            -e 's|](rag_ingestion/README\.md)|](rag-ingestion.md)|g' \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/architecture/|](../architecture/|g' \
+            -e 's|](docs/architecture/|](../architecture/|g' \
+            docs/services/backend.md
+
+          # ── services/frontend.md ──────────────────────────────────────────────
+          cp frontend/README.md docs/services/frontend.md
+          sed -i \
+            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
+            -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/architecture/|](../architecture/|g' \
+            -e 's|](\.\./README\.md)|](../index.md)|g' \
+            docs/services/frontend.md
+
+          # ── services/chain.md ─────────────────────────────────────────────────
+          cp backend/chain/README.md docs/services/chain.md
+          sed -i \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./README\.md)|](backend.md)|g' \
+            -e 's|](\.\./imdbapi/README\.md)|](imdbapi.md)|g' \
+            -e 's|](\.\./rag_ingestion/README\.md)|](rag-ingestion.md)|g' \
+            docs/services/chain.md
+
+          # ── services/imdbapi.md ───────────────────────────────────────────────
+          cp backend/imdbapi/README.md docs/services/imdbapi.md
+          sed -i \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./README\.md)|](backend.md)|g' \
+            -e 's|](\.\./chain/README\.md)|](chain.md)|g' \
+            -e 's|](\.\./rag_ingestion/README\.md)|](rag-ingestion.md)|g' \
+            docs/services/imdbapi.md
+
+          # ── services/rag-ingestion.md ─────────────────────────────────────────
+          cp backend/rag_ingestion/README.md docs/services/rag-ingestion.md
+          sed -i \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](\.\./README\.md)|](backend.md)|g' \
+            -e 's|](\.\./chain/README\.md)|](chain.md)|g' \
+            -e 's|](\.\./imdbapi/README\.md)|](imdbapi.md)|g' \
+            docs/services/rag-ingestion.md
+
+          # ── contributing/backend.md ───────────────────────────────────────────
+          cp backend/CONTRIBUTING.md docs/contributing/backend.md
+          sed -i \
+            -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./README\.md)|](../services/backend.md)|g' \
+            -e 's|](chain/README\.md)|](../services/chain.md)|g' \
+            -e 's|](imdbapi/README\.md)|](../services/imdbapi.md)|g' \
+            -e 's|](rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+            docs/contributing/backend.md
+
+          # ── contributing/frontend.md ──────────────────────────────────────────
+          cp frontend/CONTRIBUTING.md docs/contributing/frontend.md
+          sed -i \
+            -e 's|](\.\./CONTRIBUTING\.md)|](index.md)|g' \
+            -e 's|](CONTRIBUTING\.md)|](index.md)|g' \
+            -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
+            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./README\.md)|](../services/frontend.md)|g' \
+            docs/contributing/frontend.md
+
+          echo "Generated pages ready:"
+          ls -la docs/onboarding.md docs/contributing/ docs/services/
+
+      # ── 5. Build and deploy to GitHub Pages ─────────────────────────────────
+      - name: Configure git identity for gh-deploy
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build and deploy MkDocs site
+        run: mkdocs gh-deploy --force --clean --verbose
+        # Pushes the built site to the gh-pages branch.
+        # Configure GitHub Pages to serve from that branch in:
+        #   Settings → Pages → Source → Deploy from branch → gh-pages / root

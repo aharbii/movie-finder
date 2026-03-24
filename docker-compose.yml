@@ -6,13 +6,16 @@
 #   backend   — FastAPI + LangGraph application
 #   frontend  — Angular SPA served by nginx (reverse-proxies API to backend)
 #
+# For the Structurizr architecture viewer use docker-compose.docs.yml:
+#   docker compose -f docker-compose.docs.yml up
+#
 # Qdrant is NOT included here. Both backend and frontend always connect to
 # the production Qdrant Cloud cluster via QDRANT_ENDPOINT / QDRANT_API_KEY.
 # There is no local Qdrant container.
 #
 # Usage:
-#   cp .env.example .env && $EDITOR .env   # fill in secrets
-#   docker compose up --build              # build and start everything
+#   cp .env.example .env && $EDITOR .env   # fill in secrets (first run only)
+#   docker compose up --build              # full application stack
 #   docker compose up frontend             # only frontend + its deps
 #   docker compose logs -f backend         # stream backend logs
 #

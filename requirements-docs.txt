@@ -1,0 +1,12 @@
+# Documentation build dependencies
+# Install with: pip install -r requirements-docs.txt
+#
+# Then run:
+#   ./scripts/prepare-docs.sh   # populate generated pages from submodules
+#   mkdocs serve                # local preview at http://127.0.0.1:8000
+#   mkdocs build                # build static site to site/
+
+mkdocs==1.6.1
+mkdocs-material==9.5.44
+mkdocs-swagger-ui-tag==0.6.11
+pymdown-extensions==10.12
