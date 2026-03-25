@@ -142,8 +142,9 @@ npm run test:ci
 ```
 
 **Docs-only or docs-affecting changes:**
-- If your PR changes `docs/**`, `mkdocs.yml`, `requirements-docs.txt`, `README.md`,
-  `CONTRIBUTING.md`, `ONBOARDING.md`, or submodule pointers such as `backend` / `frontend`,
+- If your PR changes the `docs` submodule pointer, `mkdocs.yml`, `requirements-docs.txt`,
+  `README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, or submodule pointers such as
+  `backend` / `frontend`,
   GitHub Actions also runs the documentation workflow before merge.
 - That workflow prepares generated docs pages from submodule READMEs and runs `mkdocs build`.
 

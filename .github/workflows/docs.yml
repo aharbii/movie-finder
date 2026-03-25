@@ -7,8 +7,8 @@ on:
   push:
     branches: [main]
     paths:
-      # Docs source
-      - "docs/**"
+      # Docs submodule pointer
+      - "docs"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       # Root-level files whose content is pulled into docs
@@ -22,8 +22,8 @@ on:
   pull_request:
     branches: [main]
     paths:
-      # Docs source
-      - "docs/**"
+      # Docs submodule pointer
+      - "docs"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       # Root-level files whose content is pulled into docs
