@@ -182,6 +182,10 @@ Three pipeline modes are automatically selected based on Git context:
 | INTEGRATION | Push to `main` | + Docker build + push `:sha8` `:latest` to ACR + optional staging deploy |
 | RELEASE | `v*` tag | + Push `:v1.2.3` to ACR + production deploy (manual approval on backend) |
 
+Documentation is validated separately by the `.github/workflows/docs.yml` GitHub Actions workflow.
+Docs-related pull requests run generated-page preparation plus `mkdocs build`, and pushes to `main`
+build and deploy the documentation site to GitHub Pages.
+
 See [`docs/devops-setup.md`](docs/devops-setup.md) for Jenkins setup, Azure provisioning, and credential configuration.
 
 ---
