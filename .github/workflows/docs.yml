@@ -19,6 +19,21 @@ on:
       - "backend"
       - "frontend"
 
+  pull_request:
+    branches: [main]
+    paths:
+      # Docs source
+      - "docs/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      # Root-level files whose content is pulled into docs
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "ONBOARDING.md"
+      # Submodule README files (pointer changes trigger a full rebuild)
+      - "backend"
+      - "frontend"
+
   # Allow manual trigger from the GitHub Actions UI
   workflow_dispatch:
 
@@ -212,6 +227,7 @@ jobs:
   # Prerequisite: Settings → Pages → Source → GitHub Actions
   deploy:
     name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
