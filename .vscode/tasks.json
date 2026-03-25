@@ -1,0 +1,226 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — FastAPI app (backend/app/)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "app: lint",
+      "type": "shell",
+      "command": "uv run ruff check app/ && uv run mypy app/src/",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "app: test",
+      "type": "shell",
+      "command": "uv run pytest app/tests/ --asyncio-mode=auto -v",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — LangGraph chain (backend/chain/)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "chain: lint",
+      "type": "shell",
+      "command": "uv run ruff check chain/ && uv run mypy chain/src/",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "chain: test",
+      "type": "shell",
+      "command": "uv run pytest chain/tests/ --asyncio-mode=auto -v",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — IMDb API client (backend/imdbapi/)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "imdbapi: lint",
+      "type": "shell",
+      "command": "uv run ruff check imdbapi/ && uv run mypy imdbapi/src/",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "imdbapi: test",
+      "type": "shell",
+      "command": "uv run pytest imdbapi/tests/ --asyncio-mode=auto -v",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — RAG ingestion (backend/rag_ingestion/ — standalone uv)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "rag: lint",
+      "type": "shell",
+      "command": "uv run ruff check . && uv run mypy .",
+      "options": { "cwd": "${workspaceFolder}/backend/rag_ingestion" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "rag: test",
+      "type": "shell",
+      "command": "uv run pytest tests/ -v",
+      "options": { "cwd": "${workspaceFolder}/backend/rag_ingestion" },
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — Aggregates
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "backend: lint all",
+      "dependsOn": ["app: lint", "chain: lint", "imdbapi: lint", "rag: lint"],
+      "dependsOrder": "parallel",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "backend: test all",
+      "dependsOn": ["app: test", "chain: test", "imdbapi: test", "rag: test"],
+      "dependsOrder": "parallel",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "backend: format all",
+      "type": "shell",
+      "command": "uv run ruff format app/ chain/ imdbapi/ && (cd rag_ingestion && uv run ruff format .)",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // FRONTEND — Angular 21 SPA
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "frontend: serve (dev)",
+      "type": "npm",
+      "script": "start",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": { "owner": "typescript", "pattern": "$tsc", "background": { "activeOnStart": true, "beginsPattern": "Changes detected", "endsPattern": "bundle generation (complete|failed)" } }
+    },
+    {
+      "label": "frontend: test",
+      "type": "npm",
+      "script": "test",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": { "kind": "test" },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "frontend: lint",
+      "type": "npm",
+      "script": "lint",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "frontend: build (prod)",
+      "type": "npm",
+      "script": "build",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // DOCS — MkDocs documentation site
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "docs: prepare (renders PlantUML + copies READMEs)",
+      "type": "shell",
+      "command": "./scripts/prepare-docs.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "docs: serve",
+      "type": "shell",
+      "command": "./scripts/prepare-docs.sh && mkdocs serve",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "docs: C4 Structurizr viewer",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.docs.yml up",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "docs: render PlantUML diagrams",
+      "type": "shell",
+      "command": "plantuml -png docs/architecture/plantuml/*.puml",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // DOCKER — Full stack
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "docker: up (full stack)",
+      "type": "shell",
+      "command": "docker compose up --build",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "docker: down",
+      "type": "shell",
+      "command": "docker compose down",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // AGGREGATE — lint + test everything
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "label": "ALL: lint",
+      "dependsOn": ["backend: lint all", "frontend: lint"],
+      "dependsOrder": "parallel",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "ALL: test",
+      "dependsOn": ["backend: test all", "frontend: test"],
+      "dependsOrder": "parallel",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

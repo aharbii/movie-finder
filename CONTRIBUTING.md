@@ -50,9 +50,35 @@ main          ← always deployable; protected; requires PR + at least 1 approva
 
 **Rules:**
 - Never push directly to `main`
-- Branch names use kebab-case: `feature/sse-reconnect-logic`
+- Branch names must be **all lowercase, kebab-case**: `feature/sse-reconnect-logic` ✓ — `Feature/SSE-Reconnect` ✗
 - Delete the branch after the PR is merged (GitHub → "Delete branch" button)
 - Target merge within the same sprint; stale branches are cleaned up weekly
+
+### GitHub branch and tag protection (rulesets)
+
+All 8 repositories have two active GitHub rulesets enforcing:
+
+| Ruleset | Target | Rules enforced |
+|---|---|---|
+| `main-branch-protection` | `main` branch | PR required · 1 approval · no force-push · no deletion · stale reviews dismissed |
+| `tag-protection` | All tags | No deletion · no force-push |
+
+**Branch and tag naming patterns are documented policy** (see below), not an automated gate.
+GitHub's `branch_name_pattern` and `tag_name_pattern` ruleset rules require GitHub Enterprise Cloud
+and are not available on GitHub Free/Pro. The naming conventions are enforced by code review.
+
+### Tag naming convention
+
+All release tags must follow [Semantic Versioning](https://semver.org/) with a `v` prefix:
+
+```
+v<MAJOR>.<MINOR>.<PATCH>              e.g. v1.2.3
+v<MAJOR>.<MINOR>.<PATCH>-<pre>       e.g. v1.2.3-rc.1
+```
+
+- Lowercase `v` prefix required
+- No leading zeros in version numbers: `v1.02.3` ✗
+- Pre-release identifiers: lowercase alphanumeric + dots + hyphens only
 
 ---
 

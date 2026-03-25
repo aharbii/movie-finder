@@ -1,0 +1,95 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — FastAPI (app/)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "name": "app: FastAPI dev server",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
+      "jinja": true,
+      "envFile": "${workspaceFolder}/backend/.env",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend"
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — LangGraph chain (chain/)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "name": "chain: run chat.py (interactive)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/chain/chat.py",
+      "envFile": "${workspaceFolder}/backend/chain/.env",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend/chain",
+      "console": "integratedTerminal"
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — RAG ingestion pipeline (standalone venv)
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "name": "rag: run ingestion pipeline",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.main",
+      "envFile": "${workspaceFolder}/backend/rag_ingestion/.env",
+      "python": "${workspaceFolder}/backend/rag_ingestion/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend/rag_ingestion",
+      "console": "integratedTerminal"
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKEND — pytest
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "name": "pytest: all backend tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["app/tests/", "chain/tests/", "imdbapi/tests/", "--asyncio-mode=auto", "-v"],
+      "envFile": "${workspaceFolder}/backend/.env",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "pytest: current file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "--asyncio-mode=auto", "-v"],
+      "envFile": "${workspaceFolder}/backend/.env",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "pytest: rag_ingestion tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests/", "-v"],
+      "envFile": "${workspaceFolder}/backend/rag_ingestion/.env",
+      "python": "${workspaceFolder}/backend/rag_ingestion/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend/rag_ingestion"
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // FRONTEND — Angular 21 (Chrome debug)
+    // Requires: npm run start already running in frontend/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      "name": "frontend: debug in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "frontend: serve (dev)",
+      "url": "http://localhost:4200/",
+      "webRoot": "${workspaceFolder}/frontend/src"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  // Recommended extensions for the Movie Finder root workspace.
+  // Press Ctrl+Shift+P → "Extensions: Show Recommended Extensions" to install all.
+  "recommendations": [
+    // ── Architecture diagrams ───────────────────────────────────────────────
+    "jebbs.plantuml",           // PlantUML preview (Alt+D / Option+D)
+
+    // ── Python (backend submodules opened from root) ────────────────────────
+    "ms-python.python",
+    "ms-python.debugpy",
+    "charliermarsh.ruff",           // Linting and formatting
+    "ms-python.mypy-type-checker",  // Strict type checking
+    "tamasfe.even-better-toml",     // pyproject.toml, uv.lock
+
+    // ── Frontend ────────────────────────────────────────────────────────────
+    "angular.ng-template",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "vitest.explorer",              // Vitest test runner UI
+
+    // ── Docker and DevOps ───────────────────────────────────────────────────
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+
+    // ── Git and GitHub ──────────────────────────────────────────────────────
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // ── AI Assistance ───────────────────────────────────────────────────────
+    "google.gemini",            // Gemini Chat and AI-powered coding
+
+    // ── General quality-of-life ─────────────────────────────────────────────
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "ms-vscode.makefile-tools"
+  ]
+}

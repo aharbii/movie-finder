@@ -64,3 +64,6 @@ docs/architecture/workspace.json
 # excluded in the docs/ submodule via docs/.gitignore.
 # This entry guards against accidental PNG commits at the root level.
 docs/architecture/plantuml/*.png
+
+.gemini/
+gha-creds-*.json
