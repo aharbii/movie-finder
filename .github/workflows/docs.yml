@@ -52,6 +52,11 @@ concurrency:
   group: docs-deploy
   cancel-in-progress: true
 
+# GitHub will force JavaScript actions onto Node.js 24 starting June 2, 2026.
+# Opt in now so the docs workflow stays ahead of the runner default.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Jobs
 # ─────────────────────────────────────────────────────────────────────────────
@@ -63,7 +68,7 @@ jobs:
     steps:
       # ── 1. Checkout with all submodules ─────────────────────────────────────
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6.0.1
         with:
           submodules: recursive
           fetch-depth: 0      # full history required for git-revision-date plugin
@@ -71,7 +76,7 @@ jobs:
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
-        uses: actions/setup-python@v5.6.0
+        uses: actions/setup-python@v6.1.0
         with:
           python-version: "3.13"
           cache: pip
@@ -215,11 +220,28 @@ jobs:
       - name: Build MkDocs site
         run: mkdocs build --verbose
 
-      # ── 6. Upload built site as a Pages artifact ──────────────────────────────
+      # ── 6. Package Pages artifact ────────────────────────────────────────────
+      # Replaces actions/upload-pages-artifact until its transitive
+      # upload-artifact dependency is fully on a Node 24-ready line.
+      - name: Archive Pages artifact
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory site \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=".[^/]*" \
+            .
+
+      # ── 7. Upload built site as a Pages artifact ────────────────────────────
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v6.0.0
         with:
-          path: site/
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
 
   # ── Deploy job ───────────────────────────────────────────────────────────────
   # Runs after build. Uses GITHUB_TOKEN via the Pages deployment API —
@@ -237,4 +259,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v4.0.5
