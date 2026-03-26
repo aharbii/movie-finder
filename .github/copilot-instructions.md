@@ -23,6 +23,23 @@ with the corresponding `CLAUDE.md`, `GEMINI.md`, and `AGENTS.md`.
 
 GitHub issues: always create in `aharbii/movie-finder` first, then link from submodule repos.
 
+## Workflow invariants
+
+- Inspect `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and one recent
+  issue/PR of the same type before creating or editing anything.
+- Do not improvise issue titles or bodies. If a template file and recent live issues diverge,
+  follow the newer live convention already in use and flag the template drift in the PR.
+- Create child issues only in repos that will actually change. Use that repo's
+  `.github/ISSUE_TEMPLATE/linked_task.yml` for linked child issues.
+- `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
+  workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
+- If CI, required checks, or merge policy change, update `README.md`, `CONTRIBUTING.md`,
+  `ONBOARDING.md`, and any affected docs pages in the same PR.
+- If a new standalone issue appears while another PR is in flight, branch from `main` and open a
+  separate PR unless stacking is explicitly requested.
+- PR descriptions disclose the AI authoring tool + model. AI-assisted review comments and
+  approvals disclose the review tool + model too.
+
 ---
 
 ## Python standards (backend)
@@ -90,13 +107,15 @@ Conventional Commits: `feat(chain): add Gemini embedding provider`
 
 ## Cross-cutting — check these for every change
 
-1. GitHub issues in parent + submodule repo (linked)
+1. GitHub issues in parent + child repos only where code/docs actually change, using the current
+   templates and recent examples
 2. Branch in submodule + `chore/` pointer bump in parent
 3. ADR if tech stack or pattern changes
 4. `.env.example` updated in every affected repo
 5. Dockerfile + docker-compose updated
-6. Jenkins `Jenkinsfile` reviewed
+6. `.github/workflows/*.yml` and/or Jenkins `Jenkinsfile` reviewed
 7. PlantUML diagrams updated
 8. Structurizr `workspace.dsl` updated
-9. Docs updated (`README.md`, `CHANGELOG.md`, `docs/`)
+9. Docs updated (`README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, `CHANGELOG.md`, `docs/`) when
+   workflow or merge expectations change
 10. All sibling submodules assessed for impact

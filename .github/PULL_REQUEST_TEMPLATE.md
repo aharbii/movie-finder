@@ -32,7 +32,9 @@ Closes #
 
 - [ ] Conventional commit title: `type(scope): summary`
 - [ ] PR description explains the *why*, not just the *what*
+- [ ] PR description discloses the AI authoring tool and model
 - [ ] Reviewer comments are addressed before requesting re-review
+- [ ] Any AI-assisted review comment or approval discloses the review tool and model
 
 ### Submodule changes (if applicable)
 
