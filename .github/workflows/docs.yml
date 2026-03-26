@@ -7,8 +7,23 @@ on:
   push:
     branches: [main]
     paths:
-      # Docs source
-      - "docs/**"
+      # Docs submodule pointer
+      - "docs"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      # Root-level files whose content is pulled into docs
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "ONBOARDING.md"
+      # Submodule README files (pointer changes trigger a full rebuild)
+      - "backend"
+      - "frontend"
+
+  pull_request:
+    branches: [main]
+    paths:
+      # Docs submodule pointer
+      - "docs"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       # Root-level files whose content is pulled into docs
@@ -212,6 +227,7 @@ jobs:
   # Prerequisite: Settings → Pages → Source → GitHub Actions
   deploy:
     name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
