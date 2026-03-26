@@ -167,6 +167,12 @@ Use the pull request template (`.github/PULL_REQUEST_TEMPLATE.md`). Required sec
 - **How to test** — steps a reviewer can follow manually
 - **Checklist** — lint, tests, docs, env var changes
 
+Before creating or editing an issue or PR, inspect the matching issue template, the PR template,
+and one recent example of the same type.
+
+If AI tools are used to author the PR, disclose the tool and model in the PR description.
+If AI tools are used in review comments or approval, disclose the review tool and model there too.
+
 ### Review requirements
 
 - Minimum **1 approval** from a team member who did not author the PR
