@@ -29,16 +29,26 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 ## GitHub repos and issue tracking
 
-All issues (bugs, features, findings, RFCs) are created in **`aharbii/movie-finder`** first.
-Submodule repos have linked child issues.
+`aharbii/movie-finder` is the main tracker repo for cross-repo work.
+
+### Issue and PR hygiene
+
+- Inspect the matching issue template, PR template, and one recent issue/PR of the same type
+  before creating or editing anything.
+- Do not improvise issue titles or bodies. Use the current template structure and section order.
+- If a template file and recent live issues diverge, follow the newer live convention already in
+  use and flag the template drift in the PR.
+- Create child issues only in repos that will actually change.
+- Child issues must use that repo's `.github/ISSUE_TEMPLATE/linked_task.yml` (or the matching
+  local template), copy the parent context, and keep the description and acceptance criteria
+  repo-specific.
+- PR descriptions must follow `.github/PULL_REQUEST_TEMPLATE.md`, link the parent issue, and
+  disclose the AI authoring tool and model.
+- Any AI-assisted review comment or approval must also disclose the tool and model used for that
+  review.
 
 ```bash
-# 1. Create parent issue
-gh issue create --repo aharbii/movie-finder --title "feat: <title>" --label "enhancement"
-# 2. Create submodule issue linked to parent
-gh issue create --repo aharbii/<submodule-repo> --title "feat: <title>" \
-  --body "Part of aharbii/movie-finder#<N>"
-# List open issues before starting any task
+# Check current work before starting
 gh issue list --repo aharbii/movie-finder --state open
 ```
 
@@ -54,7 +64,22 @@ gh issue list --repo aharbii/movie-finder --state open
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions. |
 
 **Maintenance rule:** any structural change must be mirrored across `CLAUDE.md`, `GEMINI.md`,
-`AGENTS.md` in every affected repo, and `.github/copilot-instructions.md` at root.
+`AGENTS.md`, and `.github/copilot-instructions.md` in every affected repo.
+
+---
+
+## Workflow invariants
+
+- `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
+  workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
+- `backend/chain`, `backend/imdbapi`, and `backend/rag_ingestion` are gitlinks in
+  `aharbii/movie-finder-backend` and follow the same rule there.
+- Root-only changes do not need child submodule issues. Create child issues only for repos whose
+  files, docs, or gitlink pointers will change.
+- If a new standalone issue appears mid-session, switch back to `main` and create a separate
+  branch/PR unless stacking is explicitly requested.
+- If CI, required checks, or merge policy change, update contributor-facing docs in the same
+  change: `README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, and any affected docs pages.
 
 ---
 
@@ -145,14 +170,16 @@ opening a parent workspace gives you all capabilities of its children.
 
 ## Cross-cutting change checklist
 
-1. **GitHub issues:** Parent + Submodule linked issues.
+1. **GitHub issues:** Parent issue in `aharbii/movie-finder` + child issues only in repos that
+   will change. Inspect the matching templates and a recent example before filing or editing.
 2. **Branching:** `feature/`, `fix/`, `chore/`, `docs/`, `hotfix/` (kebab-case).
 3. **ADR:** Update `docs/architecture/decisions/` for any tech decision.
 4. **Implementation:** Follow patterns (Strategy, State machine, Repository, Facade).
 5. **Tests:** Unit + Integration tests mandatory.
 6. **Env/Secrets:** Update `.env.example` in all affected repos.
 7. **Docker:** Update `Dockerfile` and `docker-compose.yml`.
-8. **CI:** Review `Jenkinsfile`.
+8. **CI:** Review `.github/workflows/*.yml` and `Jenkinsfile` as applicable. Update
+   contributor-facing docs when required checks or merge policy change.
 9. **Diagrams:** Update PlantUML (`.puml`) and Structurizr (`workspace.dsl`).
 10. **Submodule bump:** Commit in submodule, then bump pointer in parent.
 
@@ -161,7 +188,10 @@ opening a parent workspace gives you all capabilities of its children.
 ## Session start protocol (OpenAI Codex CLI)
 
 1. `gh issue list --repo aharbii/movie-finder --state open`
-2. **Create GitHub issue** in parent repo (and submodule repo, linked to parent)
-3. **Create branch** following the branching convention
-4. **Assess the cross-cutting checklist**
-5. **Plan first** (think and plan thoroughly before writing code for non-trivial changes)
+2. Inspect the matching issue/PR templates and a recent example of the same type
+3. **Create GitHub issue** in `aharbii/movie-finder`, then create child issues only in repos that
+   will actually change
+4. **Create branch from `main`** following the branching convention; new standalone issues get a
+   separate branch/PR unless stacking is explicitly requested
+5. **Assess the cross-cutting checklist**
+6. **Plan first** (think and plan thoroughly before writing code for non-trivial changes)

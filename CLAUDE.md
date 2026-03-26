@@ -29,16 +29,26 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 ## GitHub repos and issue tracking
 
-All issues (bugs, features, findings, RFCs) are created in **`aharbii/movie-finder`** first.
-Submodule repos have linked child issues.
+`aharbii/movie-finder` is the main tracker repo for cross-repo work.
+
+### Issue and PR hygiene
+
+- Inspect the matching issue template, PR template, and one recent issue/PR of the same type
+  before creating or editing anything.
+- Do not improvise issue titles or bodies. Use the current template structure and section order.
+- If a template file and recent live issues diverge, follow the newer live convention already in
+  use and flag the template drift in the PR.
+- Create child issues only in repos that will actually change.
+- Child issues must use that repo's `.github/ISSUE_TEMPLATE/linked_task.yml` (or the matching
+  local template), copy the parent context, and keep the description and acceptance criteria
+  repo-specific.
+- PR descriptions must follow `.github/PULL_REQUEST_TEMPLATE.md`, link the parent issue, and
+  disclose the AI authoring tool and model.
+- Any AI-assisted review comment or approval must also disclose the tool and model used for that
+  review.
 
 ```bash
-# 1. Create parent issue
-gh issue create --repo aharbii/movie-finder --title "feat: <title>" --label "enhancement"
-# 2. Create submodule issue linked to parent
-gh issue create --repo aharbii/<submodule-repo> --title "feat: <title>" \
-  --body "Part of aharbii/movie-finder#<N>"
-# List open issues before starting any task
+# Check current work before starting
 gh issue list --repo aharbii/movie-finder --state open
 ```
 
@@ -56,6 +66,21 @@ This project supports multiple AI coding agents. Each reads its own context file
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions. |
 
 **Maintenance rule:** any structural change (new pattern, new tool, new workflow, VSCode config update) must be mirrored across `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.github/copilot-instructions.md` in every affected repo.
+
+---
+
+## Workflow invariants
+
+- `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
+  workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
+- `backend/chain`, `backend/imdbapi`, and `backend/rag_ingestion` are gitlinks in
+  `aharbii/movie-finder-backend` and follow the same rule there.
+- Root-only changes do not need child submodule issues. Create child issues only for repos whose
+  files, docs, or gitlink pointers will change.
+- If a new standalone issue appears mid-session, switch back to `main` and create a separate
+  branch/PR unless stacking is explicitly requested.
+- If CI, required checks, or merge policy change, update contributor-facing docs in the same
+  change: `README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, and any affected docs pages.
 
 ### Claude Code: VSCode extension vs CLI
 
@@ -381,10 +406,13 @@ and enforced via contributor guidelines, not automated gate checks.
 
 Before implementing anything:
 1. `gh issue list --repo aharbii/movie-finder --state open` — check what already exists
-2. **Create GitHub issue** in parent repo (and submodule repo, linked to parent)
-3. **Create branch** following the branching convention above
-4. **Assess the cross-cutting checklist** — identify everything that needs to change
-5. **Plan first** for non-trivial changes — align before writing code
+2. Inspect the matching issue/PR templates and a recent example of the same type
+3. **Create GitHub issue** in `aharbii/movie-finder`, then create child issues only in repos that
+   will actually change
+4. **Create branch from `main`** following the branching convention above; new standalone issues
+   get a separate branch/PR unless stacking is explicitly requested
+5. **Assess the cross-cutting checklist** — identify everything that needs to change
+6. **Plan first** for non-trivial changes — align before writing code
 
 ---
 
@@ -394,11 +422,13 @@ Run through this for **every** task before declaring done.
 
 ### 1. GitHub issues
 - [ ] Issue in `aharbii/movie-finder` (parent repo)
-- [ ] Issue in the submodule repo, linked to parent (`Part of aharbii/movie-finder#N`)
+- [ ] Child issues only in repos that will actually change
+- [ ] Matching issue/PR templates and a recent example were inspected before filing or editing
 
 ### 2. Branch
 - [ ] Branch in the submodule repo: `feature/`, `fix/`, `chore/`, `docs/`, `hotfix/`
 - [ ] Kebab-case name (e.g., `feature/gemini-embedding-provider`)
+- [ ] New standalone issues branch from `main` unless stacking is explicitly requested
 - [ ] Parent repo also needs a `chore/` branch to bump the pointer after the submodule merges
 
 ### 3. ADR (Architecture Decision Record)
@@ -432,7 +462,8 @@ Run through this for **every** task before declaring done.
 - [ ] Root `docker-compose.yml` updated if needed (new service, new env var, port change)
 
 ### 8. CI — Jenkins
-- [ ] `Jenkinsfile` in affected submodule reviewed — new stages, credentials, or env vars?
+- [ ] `.github/workflows/*.yml` and/or `Jenkinsfile` in affected repo reviewed — new stages,
+      permissions, credentials, or env vars?
 - [ ] Jenkins credentials table in `docs/devops-setup.md` updated if new credentials needed
 - [ ] New Jenkins credential → flag to user (manual step in Jenkins UI)
 
@@ -446,6 +477,7 @@ Run through this for **every** task before declaring done.
 ### 10. Documentation
 - [ ] `docs/` submodule pages updated for the change (services, devops, architecture)
 - [ ] `README.md` in affected submodule updated if interface or usage changed
+- [ ] `CONTRIBUTING.md` / `ONBOARDING.md` updated when CI, required checks, or merge policy change
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` in affected submodule
 - [ ] OpenAPI schema: FastAPI auto-generates it — verify no unintended breaking changes at `/docs`
 - [ ] DevOps setup guide (`docs/devops-setup.md`) updated if new infra, credentials, or secrets
@@ -480,9 +512,11 @@ git commit -m "chore(<submodule>): bump to latest main"
 ```
 
 ### 13. Pull request
-- [ ] PR in submodule repo — title follows Conventional Commits, body references the issue
+- [ ] PR in submodule repo — title follows Conventional Commits, body references the issue, and
+      discloses the AI authoring tool + model
 - [ ] PR in parent repo to bump the submodule pointer
 - [ ] Both PRs linked to their respective issues
+- [ ] Any AI-assisted review comment or approval discloses the review tool + model
 
 ---
 

@@ -1,6 +1,6 @@
 name: "Technical Debt / Design Flaw"
 description: "Architectural, design, or implementation quality issues found in code review or audit."
-title: "[DEBT] <short description>"
+title: "[TECH-DEBT] <short description>"
 labels: ["technical-debt"]
 body:
 
