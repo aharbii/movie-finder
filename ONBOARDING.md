@@ -328,7 +328,9 @@ npm run test:ci
    ```bash
    git push -u origin feature/my-change
    ```
-   Open the PR on GitHub. Jenkins triggers automatically and runs lint + tests.
+   Open the PR on GitHub. Jenkins triggers automatically and runs lint + tests. If the change
+   affects project documentation, the GitHub Actions docs workflow also runs generated-page
+   preparation and `mkdocs build`.
 
 6. **Wait for CI green** + 1 reviewer approval, then merge.
 

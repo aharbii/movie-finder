@@ -141,6 +141,13 @@ npm run lint
 npm run test:ci
 ```
 
+**Docs-only or docs-affecting changes:**
+- If your PR changes the `docs` submodule pointer, `mkdocs.yml`, `requirements-docs.txt`,
+  `README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, or submodule pointers such as
+  `backend` / `frontend`,
+  GitHub Actions also runs the documentation workflow before merge.
+- That workflow prepares generated docs pages from submodule READMEs and runs `mkdocs build`.
+
 Pre-commit hooks run on every `git commit`. They enforce linting, formatting, type checking, and secret detection. If they fail, fix the reported issue before retrying — do not bypass with `--no-verify`.
 
 ### PR title
@@ -159,6 +166,12 @@ Use the pull request template (`.github/PULL_REQUEST_TEMPLATE.md`). Required sec
 - **What** — what changed and why
 - **How to test** — steps a reviewer can follow manually
 - **Checklist** — lint, tests, docs, env var changes
+
+Before creating or editing an issue or PR, inspect the matching issue template, the PR template,
+and one recent example of the same type.
+
+If AI tools are used to author the PR, disclose the tool and model in the PR description.
+If AI tools are used in review comments or approval, disclose the review tool and model there too.
 
 ### Review requirements
 
@@ -341,6 +354,16 @@ git push
 | RELEASE | `v*` tag | Lint · Test · Build Docker · Push `:v1.2.3` to ACR · Production deploy |
 
 CONTRIBUTION builds give developers fast feedback (< 5 minutes). Nothing is built or pushed to ACR.
+
+### Documentation workflow
+
+Docs-related pull requests also run `.github/workflows/docs.yml` on GitHub Actions. That check:
+
+- copies generated documentation pages from submodule READMEs
+- runs `mkdocs build`
+- does **not** deploy GitHub Pages from pull requests
+
+Documentation is deployed to GitHub Pages only on pushes to `main`.
 
 ### Required Jenkins credentials
 
