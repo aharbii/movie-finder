@@ -61,11 +61,41 @@ This project supports multiple AI coding agents. Each reads its own context file
 | Agent | File | Notes |
 |---|---|---|
 | **Claude Code** (VSCode extension + CLI) | `CLAUDE.md` | Primary tool. VSCode extension and CLI share the same context. |
-| **Gemini CLI** | `GEMINI.md` | Fallback when Claude usage limit is reached. |
-| **OpenAI Codex CLI** | `AGENTS.md` | Alternative for collaborators. Auto-generated from `GEMINI.md`. |
+| **Gemini CLI** | `GEMINI.md` | Fallback / research agent. Use for Phase 1 exploration and as implementation fallback. |
+| **OpenAI Codex CLI** | `AGENTS.md` | Secondary implementation agent. Reads `ai-context/prompts/` for workflow prompts. |
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions. |
 
-**Maintenance rule:** any structural change (new pattern, new tool, new workflow, VSCode config update) must be mirrored across `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.github/copilot-instructions.md` in every affected repo.
+### Slash commands (Claude Code only)
+
+`.claude/commands/` exists in the root workspace and in every submodule workspace.
+Type `/` in Claude Code to see available commands.
+
+| Command | Phase | Where to run |
+|---|---|---|
+| `/session-start` | Status check | Root workspace |
+| `/create-issue [description]` | Issue creation | Root workspace |
+| `/implement [issue-number]` | Implementation | **Submodule workspace** |
+| `/review-pr [pr-number]` | Code review | **Submodule workspace** |
+| `/bump-submodule [path]` | After merge | Root workspace |
+
+### Copy-paste prompts (Codex CLI / Gemini CLI / Ollama)
+
+`ai-context/prompts/` contains agent-agnostic prompts for Codex, Gemini, and Ollama:
+- `ai-context/prompts/implement.md` — use with `codex` or `ollama`
+- `ai-context/prompts/review-pr.md` — use with `gh pr diff N | codex "..."` or ollama
+- `ai-context/prompts/research.md` — project context block for research sessions
+
+### Agent Briefing pattern
+
+Every GitHub issue **must** include an `## Agent Briefing` section before being handed to any
+agent for implementation. The template is in `ai-context/issue-agent-briefing-template.md`.
+Issues without an Agent Briefing must NOT be handed to an agent cold — the agent will explore
+the codebase speculatively and burn quota finding what the briefing would have told it directly.
+
+**Maintenance rule:** any structural change (new pattern, new tool, new workflow, VSCode config
+update, quality check command change) must be mirrored across `CLAUDE.md`, `GEMINI.md`,
+`AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`, and `ai-context/prompts/`
+in every affected repo.
 
 ---
 
@@ -75,6 +105,25 @@ This project supports multiple AI coding agents. Each reads its own context file
   workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
 - `backend/chain`, `backend/imdbapi`, and `backend/rag_ingestion` are gitlinks in
   `aharbii/movie-finder-backend` and follow the same rule there.
+
+### Issue hierarchy
+
+`movie-finder` is the tracker but it only knows about its **direct submodules**:
+
+```
+movie-finder
+  └── movie-finder-backend   ← movie-finder creates child issues here
+        ├── movie-finder-chain      ← backend creates sub-issues here
+        ├── imdbapi-client          ← backend creates sub-issues here
+        └── movie-finder-rag        ← backend creates sub-issues here
+  └── movie-finder-frontend
+  └── movie-finder-docs
+  └── movie-finder-infrastructure
+```
+
+From the movie-finder root: create child issues only in the four direct repos above.
+When a task involves chain/imdbapi/rag, create a child in `movie-finder-backend`; the
+backend workspace then manages its own sub-issues via `/create-issue` in that workspace.
 - Root-only changes do not need child submodule issues. Create child issues only for repos whose
   files, docs, or gitlink pointers will change.
 - If a new standalone issue appears mid-session, switch back to `main` and create a separate
@@ -404,15 +453,19 @@ and enforced via contributor guidelines, not automated gate checks.
 
 ## Session start protocol
 
+**Shortcut:** run `/session-start` in Claude Code for a quick status summary before anything else.
+
 Before implementing anything:
 1. `gh issue list --repo aharbii/movie-finder --state open` — check what already exists
 2. Inspect the matching issue/PR templates and a recent example of the same type
 3. **Create GitHub issue** in `aharbii/movie-finder`, then create child issues only in repos that
-   will actually change
-4. **Create branch from `main`** following the branching convention above; new standalone issues
+   will actually change — use `/create-issue [description]` or follow the manual steps below
+4. **Ensure the issue has an Agent Briefing section** (template: `ai-context/issue-agent-briefing-template.md`)
+   before any implementation starts — without it, agents explore the codebase speculatively
+5. **Create branch from `main`** following the branching convention above; new standalone issues
    get a separate branch/PR unless stacking is explicitly requested
-5. **Assess the cross-cutting checklist** — identify everything that needs to change
-6. **Plan first** for non-trivial changes — align before writing code
+6. **Assess the cross-cutting checklist** — identify everything that needs to change
+7. **Plan first** for non-trivial changes — align before writing code
 
 ---
 
@@ -424,6 +477,8 @@ Run through this for **every** task before declaring done.
 - [ ] Issue in `aharbii/movie-finder` (parent repo)
 - [ ] Child issues only in repos that will actually change
 - [ ] Matching issue/PR templates and a recent example were inspected before filing or editing
+- [ ] Issue includes an `## Agent Briefing` section (use `ai-context/issue-agent-briefing-template.md`)
+      before any agent starts implementation
 
 ### 2. Branch
 - [ ] Branch in the submodule repo: `feature/`, `fix/`, `chore/`, `docs/`, `hotfix/`
@@ -490,6 +545,11 @@ When anything architectural, procedural, or structural changes (new tool, new pa
 - [ ] If VSCode configs changed: update `.vscode/` tables in all three files
 - [ ] If cross-cutting checklist changed: update all three files
 - [ ] Root `.github/copilot-instructions.md` updated if stack, patterns, or conventions changed
+- [ ] If quality check commands changed (e.g. `uv run pre-commit` → `make check`):
+      update `.claude/commands/implement.md` and `ai-context/prompts/implement.md`
+      in every affected submodule
+- [ ] If repo structure, branch names, or workflow steps changed:
+      update all `.claude/commands/*.md` files and `ai-context/prompts/` in affected submodules
 
 ### 11. Other affected submodules
 Explicitly assess each before closing:

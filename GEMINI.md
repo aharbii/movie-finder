@@ -56,15 +56,29 @@ gh issue list --repo aharbii/movie-finder --state open
 
 ## AI agent context files
 
-| Agent | File | Notes |
+| Agent | File | Role |
 |---|---|---|
-| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md` | Primary tool for this project. |
-| **Gemini CLI** | `GEMINI.md` | This file — fallback when Claude limit is reached. |
-| **OpenAI Codex CLI** | `AGENTS.md` | Alternative for collaborators. |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions. |
+| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md` | Primary implementation agent — use slash commands |
+| **Gemini CLI** | `GEMINI.md` | This file — research/exploration + implementation fallback |
+| **OpenAI Codex CLI** | `AGENTS.md` | Secondary implementation agent |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo inline suggestions |
+
+### Prompts for Gemini CLI
+
+Copy-paste prompts are in `ai-context/prompts/` (available in each submodule too):
+- `ai-context/prompts/implement.md` — step-by-step implementation workflow
+- `ai-context/prompts/review-pr.md` — PR review workflow (can pipe `gh pr diff` into it)
+- `ai-context/prompts/research.md` — project context block for research sessions
+
+### Agent Briefing pattern
+
+Every issue must have an `## Agent Briefing` section before you start implementing.
+Template: `ai-context/issue-agent-briefing-template.md`
+The briefing lists exact files to read — without it, do not explore the codebase speculatively.
 
 **Maintenance rule:** any structural change must be mirrored across `CLAUDE.md`, `GEMINI.md`,
-`AGENTS.md`, and `.github/copilot-instructions.md` in every affected repo.
+`AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`, and `ai-context/prompts/`
+in every affected repo.
 
 ---
 
@@ -172,6 +186,7 @@ opening a parent workspace gives you all capabilities of its children.
 
 1. **GitHub issues:** Parent issue in `aharbii/movie-finder` + child issues only in repos that
    will change. Inspect the matching templates and a recent example before filing or editing.
+   **Issue must have an Agent Briefing section** before implementation starts.
 2. **Branching:** `feature/`, `fix/`, `chore/`, `docs/`, `hotfix/` (kebab-case).
 3. **ADR:** Update `docs/architecture/decisions/` for any tech decision.
 4. **Implementation:** Follow patterns (Strategy, State machine, Repository, Facade).
@@ -182,6 +197,9 @@ opening a parent workspace gives you all capabilities of its children.
    contributor-facing docs when required checks or merge policy change.
 9. **Diagrams:** Update PlantUML (`.puml`) and Structurizr (`workspace.dsl`).
 10. **Submodule bump:** Commit in submodule, then bump pointer in parent.
+10a. **AI agent context files:** Mirror any workflow/structural change across `CLAUDE.md`,
+    `GEMINI.md`, `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`,
+    and `ai-context/prompts/` in every affected repo.
 
 ---
 
@@ -191,7 +209,12 @@ opening a parent workspace gives you all capabilities of its children.
 2. Inspect the matching issue/PR templates and a recent example of the same type
 3. **Create GitHub issue** in `aharbii/movie-finder`, then create child issues only in repos that
    will actually change
-4. **Create branch from `main`** following the branching convention; new standalone issues get a
+4. **Ensure the issue has an Agent Briefing section** before starting implementation
+   (template: `ai-context/issue-agent-briefing-template.md`)
+5. **Create branch from `main`** following the branching convention; new standalone issues get a
    separate branch/PR unless stacking is explicitly requested
-5. **Assess the cross-cutting checklist**
-6. **Plan first** (use `enter_plan_mode` for non-trivial changes)
+6. **Assess the cross-cutting checklist**
+7. **Plan first** (use `enter_plan_mode` for non-trivial changes)
+
+For implementation, use: `cat ai-context/prompts/implement.md` — it contains the full workflow.
+For review, use: `gh pr diff N --repo REPO | gemini "$(cat ai-context/prompts/review-pr.md)"`
