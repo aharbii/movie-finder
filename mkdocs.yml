@@ -24,6 +24,7 @@ exclude_docs: |
   README.md
   architecture/architecture.mdj
   architecture/plantuml/*.puml
+  ai-context/**
 
 # ─────────────────────────────────────────────────────────────
 # Theme
