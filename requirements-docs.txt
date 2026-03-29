@@ -10,3 +10,4 @@ mkdocs==1.6.1
 mkdocs-material==9.5.44
 mkdocs-swagger-ui-tag==0.6.11
 pymdown-extensions==10.12
+pygments==2.19.2
