@@ -1,23 +1,26 @@
 # =============================================================================
 # movie-finder — full-stack docker-compose (local development)
 #
-# Services:
-#   postgres  — session / user database (PostgreSQL)
-#   backend   — FastAPI + LangGraph application
-#   frontend  — Angular SPA served by nginx (reverse-proxies API to backend)
+# Services (default stack — always started):
+#   postgres    — session / user database (PostgreSQL)
+#   backend     — FastAPI + LangGraph application
+#   frontend    — Angular SPA served by nginx (reverse-proxies API to backend)
 #
-# For the Structurizr architecture viewer use docker-compose.docs.yml:
-#   docker compose -f docker-compose.docs.yml up
+# Services (opt-in profiles):
+#   structurizr — Structurizr Lite C4 architecture viewer (--profile docs)
+#   mkdocs      — MkDocs documentation server           (--profile mkdocs)
 #
 # Qdrant is NOT included here. Both backend and frontend always connect to
-# the production Qdrant Cloud cluster via QDRANT_ENDPOINT / QDRANT_API_KEY.
+# the production Qdrant Cloud cluster via QDRANT_URL / QDRANT_API_KEY_RO.
 # There is no local Qdrant container.
 #
 # Usage:
-#   cp .env.example .env && $EDITOR .env   # fill in secrets (first run only)
-#   docker compose up --build              # full application stack
-#   docker compose up frontend             # only frontend + its deps
-#   docker compose logs -f backend         # stream backend logs
+#   cp .env.example .env && $EDITOR .env              # fill in secrets (first run)
+#   docker compose up --build                         # full application stack
+#   docker compose up frontend                        # only frontend + its deps
+#   docker compose logs -f backend                    # stream backend logs
+#   docker compose --profile docs up structurizr      # C4 viewer   → http://localhost:18080
+#   docker compose --profile mkdocs up mkdocs         # Docs server → http://localhost:8001
 #
 # Submodules must be initialised before building:
 #   git submodule update --init --recursive
@@ -98,6 +101,60 @@ services:
       backend:
         condition: service_healthy
     restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Structurizr Lite — interactive C4 architecture diagram viewer (docs only)
+  #
+  # Diagrams: System Context · Containers · Components · Azure + Local Deployment
+  #
+  # Start with:
+  #   docker compose --profile docs up structurizr
+  #   open http://localhost:18080
+  #
+  # Port 18080 avoids conflicts with Jenkins (8080) and FastAPI (8000).
+  # Reads workspace.dsl from docs/architecture/ (read-only mount).
+  # No .env file or application secrets required.
+  # ---------------------------------------------------------------------------
+  structurizr:
+    profiles: [docs]
+    image: structurizr/structurizr:latest
+    container_name: movie-finder-structurizr
+    command: local
+    ports:
+      - "18080:8080"
+    volumes:
+      - ./docs/architecture:/usr/local/structurizr:ro
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # MkDocs documentation server (mkdocs profile — opt-in)
+  #
+  # Serves the MkDocs documentation site with live-reload.
+  # Runs prepare-docs.sh first to copy submodule READMEs and render PlantUML PNGs.
+  # Requires: plantuml + graphviz are included in the image build.
+  #
+  # Start with:
+  #   docker compose --profile mkdocs up mkdocs
+  #   open http://localhost:8001
+  #
+  # Port 8001 matches mkdocs.yml dev_addr to avoid conflict with FastAPI (8000).
+  # Mounts repo root read-write so prepare-docs.sh can write generated files.
+  # ---------------------------------------------------------------------------
+  mkdocs:
+    profiles: [mkdocs]
+    build:
+      context: .
+      dockerfile: Dockerfile.mkdocs
+    image: movie-finder-mkdocs:local
+    container_name: movie-finder-mkdocs
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: >
+      sh -c "./scripts/prepare-docs.sh && mkdocs serve --dev-addr 0.0.0.0:8001"
+    restart: "no"
 
 volumes:
   postgres_data:

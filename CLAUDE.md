@@ -155,7 +155,7 @@ They are **the same agent** — same model, same `CLAUDE.md` context, same capab
 
 **Structurizr C4 viewer** (local):
 ```bash
-docker compose -f docker-compose.docs.yml up   # → http://localhost:8080
+docker compose --profile docs up structurizr   # → http://localhost:18080
 ```
 
 **OpenAPI docs** (when backend is running): `http://localhost:8000/docs`

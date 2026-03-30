@@ -24,6 +24,9 @@ exclude_docs: |
   README.md
   architecture/architecture.mdj
   architecture/plantuml/*.puml
+  architecture/workspace.dsl
+  architecture/workspace.json
+  architecture/.structurizr/
   ai-context/**
 
 # ─────────────────────────────────────────────────────────────
@@ -129,12 +132,12 @@ nav:
 
   - Architecture:
       - Overview: architecture/index.md
-      - Structurizr DSL (C4): architecture/workspace.dsl
       - PlantUML Diagrams:
           - All Diagrams: architecture/plantuml/index.md
       - Decisions (ADRs):
           - Register: architecture/decisions/index.md
           - ADR-001 Initial Architecture: architecture/decisions/ADR-001-initial-architecture.md
+          - ADR-002 Docker-Only Developer Contract: architecture/decisions/ADR-002-docker-only-developer-contract.md
 
   - Services:
       - Service Map: services/index.md
@@ -151,6 +154,7 @@ nav:
 
   - DevOps:
       - Platform Setup: devops/setup.md
+      - Jenkins CI Pipelines: devops/jenkins-pipelines.md
 
   - Internal:
       - Agent Queries: internal/agent-queries.md

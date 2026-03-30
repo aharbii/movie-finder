@@ -1,0 +1,28 @@
+# =============================================================================
+# movie-finder-mkdocs — documentation build image
+#
+# Used by docker compose --profile mkdocs up mkdocs
+# Build context: repo root (for requirements-docs.txt)
+#
+# Includes:
+#   - MkDocs + Material theme + all plugins
+#   - PlantUML (Java-based) + Graphviz (required for C4 and UML diagrams)
+#   - Git (required by prepare-docs.sh for submodule README discovery)
+# =============================================================================
+
+FROM python:3.13-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    plantuml \
+    graphviz \
+    default-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-docs.txt /tmp/requirements-docs.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements-docs.txt
+
+WORKDIR /workspace
+
+EXPOSE 8001
