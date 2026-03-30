@@ -151,6 +151,7 @@ nav:
 
   - DevOps:
       - Platform Setup: devops/setup.md
+      - Jenkins CI Pipelines: devops/jenkins-pipelines.md
 
   - Internal:
       - Agent Queries: internal/agent-queries.md
