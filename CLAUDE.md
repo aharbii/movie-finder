@@ -330,53 +330,21 @@ rather than introducing a new one.
 
 ## Pre-commit hooks
 
-**Every submodule has its own `.pre-commit-config.yaml`** tailored to its stack.
-Install and run from within each submodule's directory.
-
-### Python submodules (`backend/`, `backend/chain/`, `backend/rag_ingestion/`, `backend/imdbapi/`)
+Every submodule has its own `.pre-commit-config.yaml`. Run from within the submodule directory.
+**Never `--no-verify`.**
 
 ```bash
-# Install (run once per clone, or after hook version changes)
-uv run pre-commit install
-
-# Run manually
+# Python submodules (backend, chain, imdbapi, rag_ingestion)
+uv run pre-commit install   # once per clone
 uv run pre-commit run --all-files
-```
 
-| Hook | Applies to |
-|---|---|
-| `trailing-whitespace`, `end-of-file-fixer`, `check-yaml` | All |
-| `check-added-large-files`, `check-case-conflict`, `check-merge-conflict` | All |
-| `detect-private-key`, `detect-secrets` | All |
-| `pretty-format-json`, `sort-simple-yaml` | `rag_ingestion/`, `imdbapi/` only |
-| `mypy --strict` | All (additional deps vary per submodule — see each `.pre-commit-config.yaml`) |
-| `ruff-check --fix`, `ruff-format` | All |
-
-### Frontend (`frontend/`)
-
-```bash
-# Prerequisite: node_modules must exist
-npm ci
-
-# Install hooks
-pre-commit install
-
-# Run manually
+# Frontend
+npm ci && pre-commit install
 pre-commit run --all-files
 ```
 
-| Hook | What it checks |
-|---|---|
-| `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-merge-conflict` | File health |
-| `detect-private-key`, `detect-secrets` | Secrets (excludes `package-lock.json`) |
-| `eslint-frontend` | TypeScript + HTML templates via local `node_modules/.bin/eslint` |
-| `prettier-frontend` | Format check via local `node_modules/.bin/prettier` |
-
-### Policy
-
-- **Never `--no-verify`** unless directed by a team lead, and always follow up with a clean commit
-- `detect-secrets` false positive → add `# pragma: allowlist secret` inline and update: `detect-secrets scan > .secrets.baseline`
-- Hook version bumps (`.pre-commit-config.yaml`) require reinstall: `pre-commit install`
+Hooks cover: whitespace, YAML, secrets (`detect-secrets`), `ruff-check --fix`, `ruff-format`, `mypy --strict` (Python); `eslint`, `prettier` (frontend).
+`detect-secrets` false positive → `# pragma: allowlist secret` + `detect-secrets scan > .secrets.baseline`.
 
 ---
 
@@ -472,111 +440,24 @@ Before implementing anything:
 ## Cross-cutting change checklist
 
 Run through this for **every** task before declaring done.
+Full detail in `ai-context/issue-agent-briefing-template.md` → "Cross-cutting updates" section.
 
-### 1. GitHub issues
-- [ ] Issue in `aharbii/movie-finder` (parent repo)
-- [ ] Child issues only in repos that will actually change
-- [ ] Matching issue/PR templates and a recent example were inspected before filing or editing
-- [ ] Issue includes an `## Agent Briefing` section (use `ai-context/issue-agent-briefing-template.md`)
-      before any agent starts implementation
-
-### 2. Branch
-- [ ] Branch in the submodule repo: `feature/`, `fix/`, `chore/`, `docs/`, `hotfix/`
-- [ ] Kebab-case name (e.g., `feature/gemini-embedding-provider`)
-- [ ] New standalone issues branch from `main` unless stacking is explicitly requested
-- [ ] Parent repo also needs a `chore/` branch to bump the pointer after the submodule merges
-
-### 3. ADR (Architecture Decision Record)
-- [ ] Does this change a tech decision, add an external dependency, or introduce a new pattern?
-  → Write an ADR in `docs/architecture/decisions/ADR-NNN-title.md` (copy template from `index.md`)
-
-### 4. Implementation
-- [ ] Code follows the design patterns established for the component (see above)
-- [ ] No pattern drift — if the pattern is wrong, raise it, don't work around it
-- [ ] `ruff` + `mypy --strict` pass (Python) or `eslint` + `prettier` pass (TypeScript)
-- [ ] Pre-commit hooks pass: `uv run pre-commit run --all-files`
-- [ ] **Never** `--no-verify`
-
-### 5. Tests
-- [ ] Unit tests for new logic
-- [ ] Integration tests for API or pipeline changes
-- [ ] Coverage does not regress
-- [ ] `pytest --asyncio-mode=auto` passes (Python) or `vitest` passes (TypeScript)
-
-### 6. Environment and secrets
-- [ ] `.env.example` updated in **every affected repo**: root, `backend/`, `backend/chain/`, `backend/rag_ingestion/`, `backend/imdbapi/`, `frontend/`
-- [ ] New secrets flagged to user for manual addition to:
-  - Azure Key Vault (runtime secrets, managed identity)
-  - Jenkins credentials store (CI build secrets)
-  - GitHub repository secrets (if needed for GH Actions in future)
-- [ ] `.gitignore` reviewed for new build artifacts or file types
-
-### 7. Docker
-- [ ] `Dockerfile` updated in affected submodule (new deps, env vars, build args)
-- [ ] `docker-compose.yml` in submodule updated if service interface changed
-- [ ] Root `docker-compose.yml` updated if needed (new service, new env var, port change)
-
-### 8. CI — Jenkins
-- [ ] `.github/workflows/*.yml` and/or `Jenkinsfile` in affected repo reviewed — new stages,
-      permissions, credentials, or env vars?
-- [ ] Jenkins credentials table in `docs/devops-setup.md` updated if new credentials needed
-- [ ] New Jenkins credential → flag to user (manual step in Jenkins UI)
-
-### 9. Architecture diagrams
-- [ ] **PlantUML** — update the relevant `.puml` file(s) in `docs/architecture/plantuml/`
-  (user manually syncs to StarUML — **never generate `.mdj` files**)
-- [ ] **Structurizr C4** — update `docs/architecture/workspace.dsl` if components or relations changed
-  (verify with `docker compose -f docker-compose.docs.yml up`)
-- [ ] Both live in the `docs/` submodule — commit there first
-
-### 10. Documentation
-- [ ] `docs/` submodule pages updated for the change (services, devops, architecture)
-- [ ] `README.md` in affected submodule updated if interface or usage changed
-- [ ] `CONTRIBUTING.md` / `ONBOARDING.md` updated when CI, required checks, or merge policy change
-- [ ] `CHANGELOG.md` updated under `[Unreleased]` in affected submodule
-- [ ] OpenAPI schema: FastAPI auto-generates it — verify no unintended breaking changes at `/docs`
-- [ ] DevOps setup guide (`docs/devops-setup.md`) updated if new infra, credentials, or secrets
-
-### 10a. AI agent context files
-When anything architectural, procedural, or structural changes (new tool, new pattern, new workflow):
-- [ ] Update `CLAUDE.md` in every affected submodule
-- [ ] Mirror the same change in `GEMINI.md` in every affected submodule
-- [ ] Mirror the same change in `AGENTS.md` in every affected submodule
-- [ ] If VSCode configs changed: update `.vscode/` tables in all three files
-- [ ] If cross-cutting checklist changed: update all three files
-- [ ] Root `.github/copilot-instructions.md` updated if stack, patterns, or conventions changed
-- [ ] If quality check commands changed (e.g. `uv run pre-commit` → `make check`):
-      update `.claude/commands/implement.md` and `ai-context/prompts/implement.md`
-      in every affected submodule
-- [ ] If repo structure, branch names, or workflow steps changed:
-      update all `.claude/commands/*.md` files and `ai-context/prompts/` in affected submodules
-
-### 11. Other affected submodules
-Explicitly assess each before closing:
-
-| Submodule | Potentially affected by… |
-|---|---|
-| `backend/chain/` | Embedding model changes, LLM model changes, state shape changes |
-| `backend/app/` | API contract changes, new endpoints, auth changes, SSE event shape |
-| `backend/imdbapi/` | IMDb API schema changes, retry/timeout config |
-| `backend/rag_ingestion/` | Embedding model changes, dataset changes, ingestion output format |
-| `frontend/` | API contract changes, new config, SSE event fields |
-| `infrastructure/` | New Azure resources, new env vars, new secrets, cost implications |
-| `docs/` | Any user-visible change, any architecture change |
-
-### 12. Submodule pointer bump
-```bash
-# After submodule changes are merged to main:
-git add <submodule-path>
-git commit -m "chore(<submodule>): bump to latest main"
-```
-
-### 13. Pull request
-- [ ] PR in submodule repo — title follows Conventional Commits, body references the issue, and
-      discloses the AI authoring tool + model
-- [ ] PR in parent repo to bump the submodule pointer
-- [ ] Both PRs linked to their respective issues
-- [ ] Any AI-assisted review comment or approval discloses the review tool + model
+| # | Category | Key gate |
+|---|---|---|
+| 1 | **GitHub issues** | Parent issue + child issues only in repos that change; Agent Briefing present |
+| 2 | **Branch** | `feature/fix/chore/docs/hotfix` + kebab-case; parent needs pointer-bump branch |
+| 3 | **ADR** | New tech decision, dependency, or project-wide pattern → write ADR |
+| 4 | **Implementation** | Matches existing design pattern; `ruff`+`mypy` / `eslint`+`prettier` pass; pre-commit pass |
+| 5 | **Tests** | Unit + integration tests; coverage doesn't regress; `pytest --asyncio-mode=auto` / `vitest` pass |
+| 6 | **Env & secrets** | `.env.example` updated in every affected repo; new secrets flagged for Key Vault + Jenkins |
+| 7 | **Docker** | `Dockerfile` + `docker-compose.yml` updated if deps, env vars, or service interface changed |
+| 8 | **CI** | `Jenkinsfile` / `.github/workflows/` reviewed; credentials table updated |
+| 9 | **Diagrams** | `.puml` files updated (never `.mdj`); `workspace.dsl` updated if C4 relations changed |
+| 10 | **Docs** | `docs/` pages, `README.md`, `CHANGELOG.md` updated; OpenAPI verified |
+| 10a | **AI context** | `CLAUDE.md` / `GEMINI.md` / `AGENTS.md` mirrored; `.claude/commands/` + `ai-context/prompts/` updated |
+| 11 | **Other submodules** | Explicitly assess chain / app / imdbapi / rag / frontend / infra / docs |
+| 12 | **Pointer bump** | `git add <submodule>` → `chore(<sub>): bump to latest main` after merge |
+| 13 | **PR** | Submodule PR + parent pointer-bump PR; both linked to issues; AI tool + model disclosed |
 
 ---
 
