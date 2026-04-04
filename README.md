@@ -128,8 +128,15 @@ Copy `.env.example` to `.env` and fill in all values. Never commit `.env`.
 | `QDRANT_API_KEY_RO`      | Yes      | Qdrant Cloud read-only API key (from RAG team) |
 | `QDRANT_COLLECTION_NAME` | Yes      | Collection name — default: `movies`            |
 | `LANGCHAIN_API_KEY`      | No       | LangSmith tracing (optional observability)     |
+| `CORS_ORIGINS`           | Yes      | JSON array of allowed browser origins          |
+| `GLOBAL_RATE_LIMIT`      | No       | Global API fallback rate limit                 |
+| `AUTH_RATE_LIMIT`        | No       | Login/token route rate limit                   |
+| `CHAT_RATE_LIMIT`        | No       | Authenticated chat route rate limit            |
+| `MAX_MESSAGE_LENGTH`     | No       | Maximum accepted user message length           |
 
 The `imdbapi.dev` REST API requires no authentication.
+The backend container applies `alembic upgrade head` during startup before the
+FastAPI process begins serving requests.
 
 ---
 

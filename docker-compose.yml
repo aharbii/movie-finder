@@ -112,8 +112,9 @@ services:
   #   open http://localhost:18080
   #
   # Port 18080 avoids conflicts with Jenkins (8080) and FastAPI (8000).
-  # Reads workspace.dsl from docs/architecture/ (read-only mount).
-  # No .env file or application secrets required.
+  # Mounts docs/architecture read-write because Structurizr Local writes
+  # workspace.json and .structurizr/ alongside workspace.dsl.
+  # Generated files are gitignored. No .env file or application secrets required.
   # ---------------------------------------------------------------------------
   structurizr:
     profiles: [docs]
@@ -123,7 +124,7 @@ services:
     ports:
       - "18080:8080"
     volumes:
-      - ./docs/architecture:/usr/local/structurizr:ro
+      - ./docs/architecture:/usr/local/structurizr
     restart: "no"
 
   # ---------------------------------------------------------------------------
