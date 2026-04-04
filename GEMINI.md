@@ -19,7 +19,7 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 | `backend/` | `aharbii/movie-finder-backend` | FastAPI + uv workspace root |
 | `backend/app/` | (nested in backend) | FastAPI application layer |
 | `backend/chain/` | `aharbii/movie-finder-chain` | LangGraph 8-node AI pipeline |
-| `backend/imdbapi/` | `aharbii/imdbapi-client` | Async IMDb REST client |
+| `backend/chain/imdbapi/` | `aharbii/imdbapi-client` | Async IMDb REST client |
 | `backend/rag_ingestion/` | `aharbii/movie-finder-rag` | Offline embedding ingestion |
 | `frontend/` | `aharbii/movie-finder-frontend` | Angular 21 SPA |
 | `docs/` | `aharbii/movie-finder-docs` | MkDocs documentation site |
@@ -86,7 +86,7 @@ in every affected repo.
 
 - `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
   workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
-- `backend/chain`, `backend/imdbapi`, and `backend/rag_ingestion` are gitlinks in
+- `backend/chain`, `backend/chain/imdbapi`, and `backend/rag_ingestion` are gitlinks in
   `aharbii/movie-finder-backend` and follow the same rule there.
 - Root-only changes do not need child submodule issues. Create child issues only for repos whose
   files, docs, or gitlink pointers will change.
@@ -129,7 +129,7 @@ opening a parent workspace gives you all capabilities of its children.
 | `backend/` | All backend packages: app + chain + imdbapi + rag_ingestion |
 | `backend/chain/` | chain only |
 | `backend/rag_ingestion/` | rag_ingestion only (standalone uv) |
-| `backend/imdbapi/` | imdbapi only |
+| `backend/chain/imdbapi/` | imdbapi only |
 | `frontend/` | Angular SPA only |
 | `docs/` | PlantUML + Markdown editing |
 | `infrastructure/` | IaC editing (Terraform/Bicep) |

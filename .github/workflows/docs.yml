@@ -71,8 +71,8 @@ jobs:
         uses: actions/checkout@v6.0.1
         with:
           submodules: recursive
-          fetch-depth: 0      # full history required for git-revision-date plugin
-          token: ${{ secrets.GH_PAT }}  # PAT with repo scope — required to clone private submodules
+          fetch-depth: 0 # full history required for git-revision-date plugin
+          token: ${{ secrets.GH_PAT }} # PAT with repo scope — required to clone private submodules
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
@@ -104,7 +104,7 @@ jobs:
             -e 's|](backend/README\.md)|](services/backend.md)|g' \
             -e 's|](frontend/README\.md)|](services/frontend.md)|g' \
             -e 's|](backend/chain/README\.md)|](services/chain.md)|g' \
-            -e 's|](backend/imdbapi/README\.md)|](services/imdbapi.md)|g' \
+            -e 's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
             -e 's|](backend/rag_ingestion/README\.md)|](services/rag-ingestion.md)|g' \
             -e 's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
             -e 's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
@@ -123,7 +123,7 @@ jobs:
             -e 's|](backend/README\.md)|](../services/backend.md)|g' \
             -e 's|](frontend/README\.md)|](../services/frontend.md)|g' \
             -e 's|](backend/chain/README\.md)|](../services/chain.md)|g' \
-            -e 's|](backend/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
+            -e 's|](backend/chain/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
             -e 's|](backend/rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
             -e 's|](docs/devops-setup\.md\b|](../devops/setup.md|g' \
             -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
@@ -169,7 +169,7 @@ jobs:
             docs/services/chain.md
 
           # ── services/imdbapi.md ───────────────────────────────────────────────
-          cp backend/imdbapi/README.md docs/services/imdbapi.md
+          cp backend/chain/imdbapi/README.md docs/services/imdbapi.md
           sed -i \
             -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
             -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/backend.md)|g' \

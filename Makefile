@@ -47,7 +47,7 @@ help:
 	@echo "    backend/   make lint | make check | make test"
 	@echo "    frontend/  make lint | make check | make test"
 	@echo "    backend/chain/         make check"
-	@echo "    backend/imdbapi/       make check"
+	@echo "    backend/chain/imdbapi/       make check"
 	@echo "    backend/rag_ingestion/ make check"
 	@echo ""
 

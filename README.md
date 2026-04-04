@@ -47,7 +47,7 @@ The **backend** submodule itself integrates four further sub-projects as nested 
 |-------------|------|-------------|
 | app | `backend/app/` | FastAPI routers, auth, session store |
 | chain | `backend/chain/` | LangGraph multi-agent pipeline |
-| imdbapi | `backend/imdbapi/` | Async IMDb REST API client |
+| imdbapi | `backend/chain/imdbapi/` | Async IMDb REST API client |
 | rag_ingestion | `backend/rag_ingestion/` | Kaggle dataset → embed → Qdrant ingestion |
 
 ---
@@ -236,6 +236,6 @@ git pull && git submodule update --init --recursive
 | Backend / App team | See `backend/CONTRIBUTING.md` |
 | Frontend team | See `frontend/CONTRIBUTING.md` |
 | AI / Chain team | See `backend/chain/CONTRIBUTING.md` |
-| IMDb API team | See `backend/imdbapi/CONTRIBUTING.md` |
+| IMDb API team | See `backend/chain/imdbapi/CONTRIBUTING.md` |
 | RAG / Data team | See `backend/rag_ingestion/CONTRIBUTING.md` |
 | DevOps / Platform | See `docs/devops-setup.md` |

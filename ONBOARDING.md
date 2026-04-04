@@ -124,7 +124,7 @@ git submodule update --init --recursive
 Confirm the submodules are populated:
 ```bash
 ls backend/chain/src/     # should contain chain/ package
-ls backend/imdbapi/src/   # should contain imdbapi/ package
+ls backend/chain/imdbapi/src/   # should contain imdbapi/ package
 ls frontend/src/app/      # should contain Angular components
 ```
 
@@ -346,7 +346,7 @@ Jump to the guide that matches your role:
 |------|-----------|
 | Backend / App engineer | [backend/README.md](backend/README.md) → [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) |
 | AI / Chain engineer | [backend/chain/README.md](backend/chain/README.md) → [backend/chain/CONTRIBUTING.md](backend/chain/CONTRIBUTING.md) |
-| IMDb API engineer | [backend/imdbapi/README.md](backend/imdbapi/README.md) → [backend/imdbapi/CONTRIBUTING.md](backend/imdbapi/CONTRIBUTING.md) |
+| IMDb API engineer | [backend/chain/imdbapi/README.md](backend/chain/imdbapi/README.md) → [backend/chain/imdbapi/CONTRIBUTING.md](backend/chain/imdbapi/CONTRIBUTING.md) |
 | RAG / Data engineer | [backend/rag_ingestion/README.md](backend/rag_ingestion/README.md) → [backend/rag_ingestion/CONTRIBUTING.md](backend/rag_ingestion/CONTRIBUTING.md) |
 | Frontend engineer | [frontend/README.md](frontend/README.md) → [frontend/CONTRIBUTING.md](frontend/CONTRIBUTING.md) |
 | DevOps / Platform | [docs/devops-setup.md](docs/devops-setup.md) |

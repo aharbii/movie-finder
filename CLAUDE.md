@@ -19,7 +19,7 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 | `backend/` | `aharbii/movie-finder-backend` | FastAPI + uv workspace root |
 | `backend/app/` | (nested in backend) | FastAPI application layer |
 | `backend/chain/` | `aharbii/movie-finder-chain` | LangGraph 8-node AI pipeline |
-| `backend/imdbapi/` | `aharbii/imdbapi-client` | Async IMDb REST client |
+| `backend/chain/imdbapi/` | `aharbii/imdbapi-client` | Async IMDb REST client |
 | `backend/rag_ingestion/` | `aharbii/movie-finder-rag` | Offline embedding ingestion |
 | `frontend/` | `aharbii/movie-finder-frontend` | Angular 21 SPA |
 | `docs/` | `aharbii/movie-finder-docs` | MkDocs documentation site |
@@ -103,7 +103,7 @@ in every affected repo.
 
 - `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
   workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
-- `backend/chain`, `backend/imdbapi`, and `backend/rag_ingestion` are gitlinks in
+- `backend/chain`, `backend/chain/imdbapi`, and `backend/rag_ingestion` are gitlinks in
   `aharbii/movie-finder-backend` and follow the same rule there.
 
 ### Issue hierarchy
@@ -175,7 +175,7 @@ directory with settings, extensions, launch configs, and tasks.
 | `backend/` | settings, extensions, `launch.json`, `tasks.json` | All backend packages: app + chain + imdbapi + rag_ingestion |
 | `backend/chain/` | settings, extensions, `launch.json`, `tasks.json` | chain only |
 | `backend/rag_ingestion/` | settings, extensions, `launch.json`, `tasks.json` | rag_ingestion only (standalone uv) |
-| `backend/imdbapi/` | settings, extensions, `launch.json`, `tasks.json` | imdbapi only |
+| `backend/chain/imdbapi/` | settings, extensions, `launch.json`, `tasks.json` | imdbapi only |
 | `frontend/` | settings, extensions, `launch.json`, `tasks.json` | Angular SPA only |
 | `docs/` | settings, extensions | PlantUML + Markdown editing |
 | `infrastructure/` | settings, extensions | IaC editing (Terraform/Bicep) |
@@ -186,7 +186,7 @@ directory with settings, extensions, launch configs, and tasks.
 |---|---|---|
 | `backend/` | `${workspaceFolder}/.venv/bin/python` | `uv sync --all-packages` from `backend/` |
 | `backend/chain/` | `${workspaceFolder}/../.venv/bin/python` | Same as above (workspace member) |
-| `backend/imdbapi/` | `${workspaceFolder}/../.venv/bin/python` | Same as above (workspace member) |
+| `backend/chain/imdbapi/` | `${workspaceFolder}/../.venv/bin/python` | Same as above (workspace member) |
 | `backend/rag_ingestion/` | `${workspaceFolder}/.venv/bin/python` | `uv sync` from `rag_ingestion/` (standalone) |
 
 ### Key VSCode behaviours configured

@@ -43,7 +43,7 @@
     },
 
     // ══════════════════════════════════════════════════════════════════════
-    // BACKEND — IMDb API client (backend/imdbapi/)
+    // BACKEND — IMDb API client (backend/chain/imdbapi/)
     // ══════════════════════════════════════════════════════════════════════
     {
       "label": "imdbapi: lint",

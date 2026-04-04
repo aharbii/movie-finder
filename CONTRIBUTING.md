@@ -28,7 +28,7 @@ For team-specific details, follow the links in the [role-based index](#role-base
 | New to the project | Read this file, then [ONBOARDING.md](ONBOARDING.md) |
 | Backend / App engineer | [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) |
 | AI / Chain engineer | [backend/chain/CONTRIBUTING.md](backend/chain/CONTRIBUTING.md) |
-| IMDb API engineer | [backend/imdbapi/CONTRIBUTING.md](backend/imdbapi/CONTRIBUTING.md) |
+| IMDb API engineer | [backend/chain/imdbapi/CONTRIBUTING.md](backend/chain/imdbapi/CONTRIBUTING.md) |
 | RAG / Data engineer | [backend/rag_ingestion/CONTRIBUTING.md](backend/rag_ingestion/CONTRIBUTING.md) |
 | Frontend engineer | [frontend/CONTRIBUTING.md](frontend/CONTRIBUTING.md) |
 | DevOps / Platform | [docs/devops-setup.md](docs/devops-setup.md) |

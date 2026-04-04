@@ -30,7 +30,7 @@ required_files=(
   "$REPO_ROOT/backend/README.md"
   "$REPO_ROOT/frontend/README.md"
   "$REPO_ROOT/backend/chain/README.md"
-  "$REPO_ROOT/backend/imdbapi/README.md"
+  "$REPO_ROOT/backend/chain/imdbapi/README.md"
   "$REPO_ROOT/backend/rag_ingestion/README.md"
   "$REPO_ROOT/backend/CONTRIBUTING.md"
   "$REPO_ROOT/frontend/CONTRIBUTING.md"
@@ -70,7 +70,7 @@ rewrite_links "$DOCS_DIR/onboarding.md" \
   's|](backend/README\.md)|](services/backend.md)|g' \
   's|](frontend/README\.md)|](services/frontend.md)|g' \
   's|](backend/chain/README\.md)|](services/chain.md)|g' \
-  's|](backend/imdbapi/README\.md)|](services/imdbapi.md)|g' \
+  's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
   's|](backend/rag_ingestion/README\.md)|](services/rag-ingestion.md)|g' \
   's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
   's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
@@ -89,7 +89,7 @@ rewrite_links "$DOCS_DIR/contributing/index.md" \
   's|](backend/README\.md)|](../services/backend.md)|g' \
   's|](frontend/README\.md)|](../services/frontend.md)|g' \
   's|](backend/chain/README\.md)|](../services/chain.md)|g' \
-  's|](backend/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
+  's|](backend/chain/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
   's|](backend/rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
   's|](docs/devops-setup\.md\b|](../devops/setup.md|g' \
   's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
@@ -134,8 +134,8 @@ rewrite_links "$DOCS_DIR/services/chain.md" \
   's|](\.\.\/rag_ingestion/README\.md)|](rag-ingestion.md)|g'
 
 # ── Copy and fix: services/imdbapi.md ────────────────────────────────────────
-echo "Copying backend/imdbapi/README.md..."
-cp "$REPO_ROOT/backend/imdbapi/README.md" "$DOCS_DIR/services/imdbapi.md"
+echo "Copying backend/chain/imdbapi/README.md..."
+cp "$REPO_ROOT/backend/chain/imdbapi/README.md" "$DOCS_DIR/services/imdbapi.md"
 rewrite_links "$DOCS_DIR/services/imdbapi.md" \
   's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
   's|](\.\.\/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
