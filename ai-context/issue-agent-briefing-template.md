@@ -13,12 +13,15 @@ Check the **Ready for implementation** box only when all fields are filled.
 > exploration that burns quota.
 
 **Workspace to open:** `[submodule-path]/`
+
 > Example: `backend/chain/` or `frontend/` — open this as your VSCode workspace, not root.
 
 **Branch to create:** `[type]/[kebab-case-title]`
+
 > Example: `fix/imdb-retry-base-delay`
 
 **Iteration scope:** [Full close | Partial — iteration N of M]
+
 > Full close: the PR should use `Closes #N`. Partial: use `Part of #N`.
 > If partial, describe what this iteration covers and what the next one will handle.
 
@@ -67,7 +70,7 @@ Work that belongs to other repos. Do not implement these here — just link them
 
 - `aharbii/movie-finder-docs#XX` — [one sentence: what docs change is needed]
 - `aharbii/movie-finder-frontend#XX` — [one sentence: what frontend change is needed]
-(delete if none)
+  (delete if none)
 
 ---
 
@@ -105,4 +108,5 @@ Copy the acceptance criteria from the issue body verbatim. The agent treats this
 ---
 
 **Ready for implementation:** [ ]
+
 > Check this only when all fields above are filled. Issues without this checked must not be handed to an agent.

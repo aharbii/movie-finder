@@ -23,15 +23,15 @@ For team-specific details, follow the links in the [role-based index](#role-base
 
 ## Role-based index
 
-| I am… | My CONTRIBUTING guide |
-|-------|----------------------|
-| New to the project | Read this file, then [ONBOARDING.md](ONBOARDING.md) |
-| Backend / App engineer | [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) |
-| AI / Chain engineer | [backend/chain/CONTRIBUTING.md](backend/chain/CONTRIBUTING.md) |
-| IMDb API engineer | [backend/chain/imdbapi/CONTRIBUTING.md](backend/chain/imdbapi/CONTRIBUTING.md) |
-| RAG / Data engineer | [backend/rag_ingestion/CONTRIBUTING.md](backend/rag_ingestion/CONTRIBUTING.md) |
-| Frontend engineer | [frontend/CONTRIBUTING.md](frontend/CONTRIBUTING.md) |
-| DevOps / Platform | [docs/devops-setup.md](docs/devops-setup.md) |
+| I am…                  | My CONTRIBUTING guide                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| New to the project     | Read this file, then [ONBOARDING.md](ONBOARDING.md)                                                    |
+| Backend / App engineer | [backend/CONTRIBUTING.md](https://github.com/aharbii/movie-finder-backend/blob/main/CONTRIBUTING.md)   |
+| AI / Chain engineer    | [chain/CONTRIBUTING.md](https://github.com/aharbii/movie-finder-chain/blob/main/CONTRIBUTING.md)       |
+| IMDb API engineer      | [imdbapi/CONTRIBUTING.md](https://github.com/aharbii/imdbapi-client/blob/main/CONTRIBUTING.md)         |
+| RAG / Data engineer    | [rag_ingestion/CONTRIBUTING.md](https://github.com/aharbii/movie-finder-rag/blob/main/CONTRIBUTING.md) |
+| Frontend engineer      | [frontend/CONTRIBUTING.md](https://github.com/aharbii/movie-finder-frontend/blob/main/CONTRIBUTING.md) |
+| DevOps / Platform      | [docs/devops/setup.md](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md)         |
 
 ---
 
@@ -49,19 +49,39 @@ main          ← always deployable; protected; requires PR + at least 1 approva
 ```
 
 **Rules:**
+
 - Never push directly to `main`
 - Branch names must be **all lowercase, kebab-case**: `feature/sse-reconnect-logic` ✓ — `Feature/SSE-Reconnect` ✗
 - Delete the branch after the PR is merged (GitHub → "Delete branch" button)
 - Target merge within the same sprint; stale branches are cleaned up weekly
 
+**Examples:**
+
+```bash
+# New capability
+git checkout -b feature/sse-reconnect-logic
+
+# Bug fix
+git checkout -b fix/imdbapi-retry-delay
+
+# Dependency bump or tooling change
+git checkout -b chore/bump-langchain-0-3-5
+
+# Documentation only
+git checkout -b docs/add-api-sequence-diagram
+
+# Urgent production fix
+git checkout -b hotfix/broken-refresh-token
+```
+
 ### GitHub branch and tag protection (rulesets)
 
 All 8 repositories have two active GitHub rulesets enforcing:
 
-| Ruleset | Target | Rules enforced |
-|---|---|---|
+| Ruleset                  | Target        | Rules enforced                                                                   |
+| ------------------------ | ------------- | -------------------------------------------------------------------------------- |
 | `main-branch-protection` | `main` branch | PR required · 1 approval · no force-push · no deletion · stale reviews dismissed |
-| `tag-protection` | All tags | No deletion · no force-push |
+| `tag-protection`         | All tags      | No deletion · no force-push                                                      |
 
 **Branch and tag naming patterns are documented policy** (see below), not an automated gate.
 GitHub's `branch_name_pattern` and `tag_name_pattern` ruleset rules require GitHub Enterprise Cloud
@@ -96,16 +116,16 @@ All repositories use [Conventional Commits](https://www.conventionalcommits.org/
 
 **Types:**
 
-| Type | When |
-|------|------|
-| `feat` | New feature or user-facing capability |
-| `fix` | Bug fix |
-| `chore` | Tooling, dependency, CI, or script change |
-| `docs` | Documentation only |
-| `test` | Adding or correcting tests |
+| Type       | When                                        |
+| ---------- | ------------------------------------------- |
+| `feat`     | New feature or user-facing capability       |
+| `fix`      | Bug fix                                     |
+| `chore`    | Tooling, dependency, CI, or script change   |
+| `docs`     | Documentation only                          |
+| `test`     | Adding or correcting tests                  |
 | `refactor` | Code restructuring without behaviour change |
-| `perf` | Performance improvement |
-| `ci` | Pipeline or Jenkins file changes |
+| `perf`     | Performance improvement                     |
+| `ci`       | Pipeline or Jenkins file changes            |
 
 **Scope** — the package or area affected:
 
@@ -118,6 +138,7 @@ ci(backend): run lint stages in parallel
 ```
 
 **Summary rules:**
+
 - Lowercase, no trailing period
 - Imperative mood: "add", not "added" or "adds"
 - ≤ 72 characters
@@ -129,12 +150,14 @@ ci(backend): run lint stages in parallel
 ### Before opening a PR
 
 **Backend:**
+
 ```bash
 make lint    # zero errors required
 make test    # zero failures required
 ```
 
 **Frontend:**
+
 ```bash
 npm run typecheck
 npm run lint
@@ -142,6 +165,7 @@ npm run test:ci
 ```
 
 **Docs-only or docs-affecting changes:**
+
 - If your PR changes the `docs` submodule pointer, `mkdocs.yml`, `requirements-docs.txt`,
   `README.md`, `CONTRIBUTING.md`, `ONBOARDING.md`, or submodule pointers such as
   `backend` / `frontend`,
@@ -181,11 +205,11 @@ If AI tools are used in review comments or approval, disclose the review tool an
 
 ### Merge strategy
 
-| Situation | Strategy |
-|-----------|----------|
-| Feature / fix / chore branch | **Squash and merge** — clean history on `main` |
-| Submodule pointer bump | **Merge commit** — preserves the pointer commit |
-| Hotfix | Squash and merge, then immediately tag a patch release |
+| Situation                    | Strategy                                               |
+| ---------------------------- | ------------------------------------------------------ |
+| Feature / fix / chore branch | **Squash and merge** — clean history on `main`         |
+| Submodule pointer bump       | **Merge commit** — preserves the pointer commit        |
+| Hotfix                       | Squash and merge, then immediately tag a patch release |
 
 ---
 
@@ -193,11 +217,11 @@ If AI tools are used in review comments or approval, disclose the review tool an
 
 ### Python (backend, chain, imdbapi, rag_ingestion)
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| ruff | Lint + format | `pyproject.toml [tool.ruff]` |
-| mypy (strict) | Type checking | `pyproject.toml [tool.mypy]` |
-| detect-secrets | Secret scanning | `.secrets.baseline` |
+| Tool           | Purpose         | Config                       |
+| -------------- | --------------- | ---------------------------- |
+| ruff           | Lint + format   | `pyproject.toml [tool.ruff]` |
+| mypy (strict)  | Type checking   | `pyproject.toml [tool.mypy]` |
+| detect-secrets | Secret scanning | `.secrets.baseline`          |
 
 Line length: **100 characters**. Target Python version: **3.13**.
 
@@ -213,11 +237,11 @@ make lint
 
 ### TypeScript (frontend)
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| ESLint 9 (flat config) | Lint | `eslint.config.js` |
-| Prettier 3 | Format | `.prettierrc` |
-| tsc --noEmit | Type check | `tsconfig.json` |
+| Tool                   | Purpose    | Config             |
+| ---------------------- | ---------- | ------------------ |
+| ESLint 9 (flat config) | Lint       | `eslint.config.js` |
+| Prettier 3             | Format     | `.prettierrc`      |
+| tsc --noEmit           | Type check | `tsconfig.json`    |
 
 ```bash
 # Frontend auto-fix
@@ -240,21 +264,23 @@ npm run typecheck && npm run lint && npm run format:check
 
 ### Backend
 
-| Package | Test runner | Mock library |
-|---------|------------|-------------|
-| app | pytest + pytest-asyncio | pytest-mock |
-| chain | pytest | pytest-mock |
-| imdbapi | pytest | respx (HTTP-level mocking) |
-| rag_ingestion | pytest | pytest-mock |
+| Package       | Test runner             | Mock library               |
+| ------------- | ----------------------- | -------------------------- |
+| app           | pytest + pytest-asyncio | pytest-mock                |
+| chain         | pytest                  | pytest-mock                |
+| imdbapi       | pytest                  | respx (HTTP-level mocking) |
+| rag_ingestion | pytest                  | pytest-mock                |
 
 Tests live in `tests/` mirroring `src/`.
 
 ```bash
-make test           # all packages
-make test-app       # FastAPI app only (requires make db-start)
-make test-chain     # LangGraph chain
-make test-imdbapi   # IMDb client
-make test-rag       # RAG ingestion
+# From backend/ (backend app tests):
+make test
+make test-coverage
+
+# From a child repo directory (e.g. backend/chain/):
+make test
+make test-coverage
 ```
 
 ### Frontend
@@ -334,6 +360,7 @@ PATCH — bug fix, backwards compatible
 Jenkins detects the `v*` tag and automatically runs the RELEASE pipeline (lint → test → build → push `:v1.2.3` to ACR → production deploy with manual approval for backend).
 
 After releasing a submodule, update the pointer in the backend repo:
+
 ```bash
 cd backend/chain && git checkout v1.2.0 && cd ../..
 git add backend/chain
@@ -347,11 +374,11 @@ git push
 
 ### Pipeline modes
 
-| Mode | Git trigger | Stages |
-|------|------------|--------|
-| CONTRIBUTION | Feature branch / PR | Lint · Test |
-| INTEGRATION | Push to `main` | Lint · Test · Build Docker · Push `:sha8` + `:latest` to ACR · (opt) Staging deploy |
-| RELEASE | `v*` tag | Lint · Test · Build Docker · Push `:v1.2.3` to ACR · Production deploy |
+| Mode         | Git trigger         | Stages                                                                              |
+| ------------ | ------------------- | ----------------------------------------------------------------------------------- |
+| CONTRIBUTION | Feature branch / PR | Lint · Test                                                                         |
+| INTEGRATION  | Push to `main`      | Lint · Test · Build Docker · Push `:sha8` + `:latest` to ACR · (opt) Staging deploy |
+| RELEASE      | `v*` tag            | Lint · Test · Build Docker · Push `:v1.2.3` to ACR · Production deploy              |
 
 CONTRIBUTION builds give developers fast feedback (< 5 minutes). Nothing is built or pushed to ACR.
 
@@ -367,7 +394,7 @@ Documentation is deployed to GitHub Pages only on pushes to `main`.
 
 ### Required Jenkins credentials
 
-See [`docs/devops-setup.md §9`](docs/devops-setup.md#9-jenkins--credentials) for the full credential table and how to add them.
+See [`docs/devops/setup.md §9`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md#9-jenkins--credentials) for the full credential table and how to add them.
 
 ### Triggering a manual staging deploy
 
@@ -383,5 +410,5 @@ See [`docs/devops-setup.md §9`](docs/devops-setup.md#9-jenkins--credentials) fo
 - **Never commit secrets.** The `detect-secrets` pre-commit hook blocks API keys, passwords, and tokens. If a file is flagged as a false positive, add `# pragma: allowlist secret` inline and update the baseline with `detect-secrets scan > .secrets.baseline`
 - **Never use `--no-verify` to bypass pre-commit hooks** unless directed by a team lead, and always follow up with a clean commit
 - **Production secrets live in Azure Key Vault.** They are injected into Container Apps at runtime via managed identity. They are never passed through Jenkins build logs or baked into Docker images
-- **Rotate secrets via Key Vault**, not by editing pipelines. See [`docs/devops-setup.md §12`](docs/devops-setup.md#12-runtime-secrets--azure-key-vault)
+- **Rotate secrets via Key Vault**, not by editing pipelines. See [`docs/devops/setup.md §12`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md#12-runtime-secrets--azure-key-vault)
 - Report security vulnerabilities privately to the project owner before creating a public issue

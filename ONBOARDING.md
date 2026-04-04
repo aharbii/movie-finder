@@ -11,13 +11,15 @@ Welcome to the project. This guide takes you from zero to a fully running local 
 3. [Prerequisites](#3-prerequisites)
 4. [Get the code](#4-get-the-code)
 5. [Secrets you need to request](#5-secrets-you-need-to-request)
-6. [Run the full stack with Docker](#6-run-the-full-stack-with-docker)
-7. [Run the backend for local development](#7-run-the-backend-for-local-development)
-8. [Run the frontend for local development](#8-run-the-frontend-for-local-development)
-9. [Run tests](#9-run-tests)
-10. [Your first contribution](#10-your-first-contribution)
-11. [Role-specific guides](#11-role-specific-guides)
-12. [Troubleshooting](#12-troubleshooting)
+6. [Ports and URLs at a glance](#6-ports-and-urls-at-a-glance)
+7. [Run the full stack with Docker](#7-run-the-full-stack-with-docker)
+8. [Run the backend for local development](#8-run-the-backend-for-local-development)
+9. [Run the frontend for local development](#9-run-the-frontend-for-local-development)
+10. [Run tests](#10-run-tests)
+11. [Working in a submodule standalone workspace](#11-working-in-a-submodule-standalone-workspace)
+12. [Your first contribution](#12-your-first-contribution)
+13. [Role-specific guides](#13-role-specific-guides)
+14. [Troubleshooting](#14-troubleshooting)
 
 ---
 
@@ -33,6 +35,7 @@ Movie Finder is a fullstack AI application. Users describe a film they half-reme
 The conversation is streamed in real time over Server-Sent Events (SSE). There is no page reload at any point.
 
 **User-facing screens:**
+
 - `/login` and `/register` — authentication
 - `/chat` — main interface: session sidebar, message thread, movie cards panel
 
@@ -41,70 +44,43 @@ The conversation is streamed in real time over Server-Sent Events (SSE). There i
 ## 2. Repository structure
 
 ```
-movie-finder/                  ← this repo (orchestrator / root)
-├── backend/                   ← submodule: FastAPI + LangGraph
-│   ├── app/                   ←   submodule: auth, chat, session store
-│   ├── chain/                 ←   submodule: LangGraph multi-agent pipeline
-│   ├── imdbapi/               ←   submodule: async IMDb REST API client
-│   └── rag_ingestion/         ←   submodule: dataset → embed → Qdrant
-├── frontend/                  ← submodule: Angular 21 SPA
-├── docs/                      ← submodule: API spec, architecture, DevOps guide
-├── infrastructure/            ← submodule: IaC and provisioning scripts
-├── docker-compose.yml         ← full-stack local development
-└── .env.example               ← environment variable template
+movie-finder/                      ← this repo (orchestrator / root)
+├── backend/                       ← submodule: FastAPI + LangGraph integration root
+│   ├── app/                       ←   directory: auth, chat, session store (FastAPI)
+│   ├── chain/                     ←   submodule: LangGraph multi-agent pipeline
+│   │   └── imdbapi/               ←     submodule: async IMDb REST API client (nested)
+│   └── rag_ingestion/             ←   submodule: dataset → embed → Qdrant
+├── frontend/                      ← submodule: Angular 21 SPA
+├── docs/                          ← submodule: API spec, architecture, DevOps guide
+├── infrastructure/                ← submodule: IaC and provisioning scripts
+├── docker-compose.yml             ← full-stack local development
+└── .env.example                   ← environment variable template
 ```
 
-Every `backend/*/` directory is an independent git repository. Changes to each must be committed and pushed separately, then the backend repo's submodule pointer must be updated.
+Every labelled submodule is an independent git repository. Changes must be committed and pushed in the submodule first, then the parent repo's submodule pointer must be updated.
 
 ---
 
 ## 3. Prerequisites
 
-Install all of the following before continuing.
+Both the backend and frontend use a **Docker-only developer contract**: all quality commands
+(lint, test, typecheck) run inside containers. You do not need a host Python, uv, Node.js,
+or npm installation.
 
 ### Required for everyone
 
-| Tool | Version | Install |
-|------|---------|---------|
-| git | 2.20+ | System package manager or [git-scm.com](https://git-scm.com) |
-| Docker Desktop (or Engine) | 24+ | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
+| Tool                       | Version | Install                                                            |
+| -------------------------- | ------- | ------------------------------------------------------------------ |
+| git                        | 2.20+   | System package manager or [git-scm.com](https://git-scm.com)       |
+| Docker Desktop (or Engine) | 24+     | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)  |
+| make                       | 3.81+   | Standard on macOS/Linux; `winget install GnuWin32.Make` on Windows |
 
-### Required for backend development
+### Recommended VS Code extensions
 
-| Tool | Version | Install |
-|------|---------|---------|
-| Python | 3.13+ | [python.org](https://www.python.org) or `pyenv` |
-| uv | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-
-Verify:
-```bash
-python --version    # Python 3.13.x
-uv --version        # uv 0.5.x or newer
-```
-
-### Required for frontend development
-
-| Tool | Version | Install |
-|------|---------|---------|
-| Node.js | 20+ | [nodejs.org](https://nodejs.org) or `nvm` |
-| npm | 11+ | Bundled with Node 20 |
-
-Verify:
-```bash
-node --version    # v20.x.x
-npm --version     # 11.x.x
-```
-
-### Recommended IDE extensions
-
-**VS Code:**
-- Python + Pylance
-- Ruff
-- ESLint
-- Prettier
-- Angular Language Service
-- Docker
-- GitLens
+- Remote Containers (Dev Containers)
+- Python + Pylance + Ruff (backend work inside the container)
+- ESLint + Prettier + Angular Language Service (frontend work inside the container)
+- Docker, GitLens
 
 ---
 
@@ -122,6 +98,7 @@ git submodule update --init --recursive
 ```
 
 Confirm the submodules are populated:
+
 ```bash
 ls backend/chain/src/     # should contain chain/ package
 ls backend/chain/imdbapi/src/   # should contain imdbapi/ package
@@ -134,14 +111,15 @@ ls frontend/src/app/      # should contain Angular components
 
 The application requires external API keys that are not in version control. Request these from the relevant team before starting.
 
-| Secret | Who to ask | Where to put it |
-|--------|------------|-----------------|
-| `QDRANT_ENDPOINT` | RAG / Data Engineering team | `.env` |
-| `QDRANT_API_KEY` | RAG / Data Engineering team | `.env` |
-| `ANTHROPIC_API_KEY` | Project lead or team lead | `.env` |
-| `OPENAI_API_KEY` | Project lead or team lead | `.env` |
+| Secret              | Who to ask                  | Where to put it |
+| ------------------- | --------------------------- | --------------- |
+| `QDRANT_URL`        | RAG / Data Engineering team | `.env`          |
+| `QDRANT_API_KEY_RO` | RAG / Data Engineering team | `.env`          |
+| `ANTHROPIC_API_KEY` | Project lead or team lead   | `.env`          |
+| `OPENAI_API_KEY`    | Project lead or team lead   | `.env`          |
 
 You generate these yourself:
+
 ```bash
 # APP_SECRET_KEY — random 32-byte hex string
 openssl rand -hex 32
@@ -151,6 +129,7 @@ openssl rand -hex 16
 ```
 
 Copy the template and fill in all values:
+
 ```bash
 cp .env.example .env
 $EDITOR .env
@@ -160,7 +139,24 @@ $EDITOR .env
 
 ---
 
-## 6. Run the full stack with Docker
+## 6. Ports and URLs at a glance
+
+Every service has a fixed default port. All are configurable via `.env` if there is a conflict.
+
+| Service                       | Default URL                                              | Who starts it                                         |
+| ----------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| Frontend (nginx / dev server) | http://localhost:80 (prod) · http://localhost:4200 (dev) | `docker compose up` / `make editor-up` in `frontend/` |
+| Backend (FastAPI)             | http://localhost:8000                                    | `docker compose up` / `make up` in `backend/`         |
+| Backend Swagger UI            | http://localhost:8000/docs                               | Same as backend                                       |
+| Backend health                | http://localhost:8000/health                             | Same as backend                                       |
+| PostgreSQL                    | localhost:5432                                           | `docker compose up` / `make up` in `backend/`         |
+| MkDocs docs site              | http://localhost:8001                                    | `make mkdocs` from repo root                          |
+
+> Qdrant Cloud is always **external** — no local Qdrant container exists.
+
+---
+
+## 7. Run the full stack with Docker
 
 This is the fastest way to verify everything works end-to-end.
 
@@ -177,15 +173,16 @@ docker compose logs -f backend
 
 **Service endpoints:**
 
-| Service | URL | Notes |
-|---------|-----|-------|
-| Frontend (Angular SPA) | http://localhost:80 | nginx-served |
-| Backend (FastAPI) | http://localhost:8000 | |
-| Backend interactive docs | http://localhost:8000/docs | Swagger UI (auto-generated) |
-| Backend health check | http://localhost:8000/health | Returns `{"status": "ok"}` |
-| PostgreSQL | localhost:5432 | `movie_finder` DB, `movie_finder` user |
+| Service                  | URL                          | Notes                                  |
+| ------------------------ | ---------------------------- | -------------------------------------- |
+| Frontend (Angular SPA)   | http://localhost:80          | nginx-served                           |
+| Backend (FastAPI)        | http://localhost:8000        |                                        |
+| Backend interactive docs | http://localhost:8000/docs   | Swagger UI (auto-generated)            |
+| Backend health check     | http://localhost:8000/health | Returns `{"status": "ok"}`             |
+| PostgreSQL               | localhost:5432               | `movie_finder` DB, `movie_finder` user |
 
 **Stop and clean up:**
+
 ```bash
 docker compose down          # stop containers
 docker compose down -v       # also delete the postgres volume (wipes DB data)
@@ -193,96 +190,98 @@ docker compose down -v       # also delete the postgres volume (wipes DB data)
 
 ---
 
-## 7. Run the backend for local development
+## 8. Run the backend for local development
 
-Hot-reload development without Docker build cycles:
+The backend uses a Docker-only developer contract. All commands run inside containers.
 
 ```bash
 cd backend/
 
-# One-time setup (installs deps, pre-commit hooks, copies .env)
-make setup
+# One-time setup: build dev image, create .env from template, install git hook
+make init
 
-# Fill in your API keys if you haven't already
+# Fill in your API keys
 $EDITOR .env
 
-# Start local PostgreSQL (Docker container — no full stack needed)
-make db-start
-# PostgreSQL is now at localhost:5432
-# DB: movie_finder, User: movie_finder, Password: devpassword (from make db-start)
-
-# Start the FastAPI dev server with hot-reload
-make run-dev
+# Start postgres + backend (hot-reload)
+make up
 # Backend: http://localhost:8000
 # Docs:    http://localhost:8000/docs
+
+# Follow logs
+make logs
+
+# Open a shell inside the running container
+make shell
+
+# Stop the stack
+make down
 ```
 
-Common commands:
+Common quality commands (run from `backend/`):
+
 ```bash
-make lint         # check code quality (ruff + mypy)
-make lint-fix     # auto-fix safe violations
-make test         # run all tests
-make test-app     # FastAPI app tests only (needs make db-start)
-make test-chain   # LangGraph chain tests
-make test-imdbapi # IMDb client tests
-make db-stop      # stop the local PostgreSQL container
-make db-reset     # wipe and restart the DB (useful after schema changes)
-make clean        # remove __pycache__, .pytest_cache, .mypy_cache
+make lint           # ruff check (report only)
+make fix            # ruff check --fix + ruff format (auto-apply)
+make typecheck      # mypy --strict
+make test           # pytest app/tests/
+make test-coverage  # pytest + coverage XML/HTML + JUnit report
+make pre-commit     # full hook suite
 ```
 
 ---
 
-## 8. Run the frontend for local development
+## 9. Run the frontend for local development
 
-The Angular dev server proxies `/api` requests to the backend at `localhost:8000`.
+The frontend uses a Docker-only developer contract. All commands run inside containers.
+The dev server proxies `/api` requests to the backend at `localhost:8000`.
 
 ```bash
 cd frontend/
 
-# Install dependencies
-npm ci
+# One-time setup: pull image, npm ci, install git hook
+make init
 
-# Start dev server with hot-reload
-npm start
+# Start dev container (dev server with hot-reload)
+make editor-up
 # Angular app: http://localhost:4200
 # API requests: proxied to http://localhost:8000
 ```
 
-The backend must be running for the app to function. Use `make run-dev` from `backend/` in a separate terminal, or have `docker compose up backend postgres` running.
+The backend must be running for the app to function. Use `make up` from `backend/` in a
+separate terminal, or have `docker compose up backend postgres` running.
 
-Common commands:
+Common quality commands (run from `frontend/`):
+
 ```bash
-npm run typecheck     # TypeScript type check
-npm run lint          # ESLint check
-npm run lint:fix      # ESLint auto-fix
-npm run format        # Prettier format
-npm run test          # Vitest watch mode
-npm run test:ci       # Single run with coverage report
-npm run build         # Production build → dist/
+make typecheck      # tsc --noEmit
+make lint           # ESLint check
+make fix            # ESLint auto-fix + Prettier format
+make test           # Vitest watch mode
+make test-coverage  # single run with coverage report (JUnit + Cobertura XML)
+make check          # typecheck + lint + test-coverage
+make shell          # open shell inside the container
+make editor-down    # stop the dev container
 ```
 
 ---
 
-## 9. Run tests
+## 10. Run tests
 
 ### Backend tests
 
 ```bash
 cd backend/
 
-# All tests (chain + imdbapi — no database needed)
+# Run all backend app tests (PostgreSQL starts automatically inside Docker)
 make test
 
-# FastAPI app tests (requires PostgreSQL)
-make db-start && make test-app
-
-# Individual packages
-make test-chain     # LangGraph pipeline
-make test-imdbapi   # IMDb API client
-make test-rag       # RAG ingestion pipeline
+# Run with coverage report (Cobertura XML + JUnit XML for Jenkins)
+make test-coverage
 ```
 
-Test coverage reports (Cobertura XML + JUnit XML) are generated in the package root and consumed by Jenkins.
+To test child repos (chain, imdbapi, rag_ingestion) run `make test` from within each
+child directory (e.g. `cd backend/chain && make test`).
 
 ### Frontend tests
 
@@ -298,9 +297,157 @@ npm run test:ci
 
 ---
 
-## 10. Your first contribution
+## 11. Working in a submodule standalone workspace
+
+You do not need to clone the entire `movie-finder` monorepo to work on a single service.
+Each submodule is a fully independent repository with its own Docker contract and VS Code
+configuration. Clone only what you need.
+
+### Which repo to clone
+
+| Your role              | Clone this                                         |
+| ---------------------- | -------------------------------------------------- |
+| Backend (FastAPI app)  | `https://github.com/aharbii/movie-finder-backend`  |
+| AI pipeline (chain)    | `https://github.com/aharbii/movie-finder-chain`    |
+| IMDb API client        | `https://github.com/aharbii/imdbapi-client`        |
+| RAG / Data engineering | `https://github.com/aharbii/movie-finder-rag`      |
+| Frontend               | `https://github.com/aharbii/movie-finder-frontend` |
+
+> **Note:** `movie-finder-chain` has `imdbapi-client` as a nested submodule.
+> Clone it with `git clone --recurse-submodules`.
+
+### Backend (FastAPI) — standalone
+
+```bash
+git clone --recurse-submodules https://github.com/aharbii/movie-finder-backend.git
+cd movie-finder-backend
+
+make init           # build dev image, create .env from template
+$EDITOR .env        # fill in: APP_SECRET_KEY, QDRANT_URL, QDRANT_API_KEY_RO,
+                    #           QDRANT_COLLECTION_NAME, ANTHROPIC_API_KEY, OPENAI_API_KEY
+make up             # starts postgres + backend
+                    # Backend: http://localhost:8000
+                    # Swagger: http://localhost:8000/docs
+
+# VS Code: attach to the running 'backend' container
+# Dev Containers: Attach to Running Container...
+
+make lint && make test   # quality checks
+make down                # stop
+```
+
+### Chain (LangGraph) — standalone
+
+```bash
+git clone --recurse-submodules https://github.com/aharbii/movie-finder-chain.git
+cd movie-finder-chain
+
+make init           # build image, create .env, install git hook
+$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RO, QDRANT_COLLECTION_NAME,
+                    #           OPENAI_API_KEY, ANTHROPIC_API_KEY
+make editor-up      # start container (stays running for VS Code attach + interactive use)
+
+# VS Code: attach to the running 'chain' container
+
+make lint && make test   # quality checks (no live credentials needed for tests)
+make editor-down         # stop
+```
+
+### IMDb API client — standalone
+
+```bash
+git clone https://github.com/aharbii/imdbapi-client.git
+cd imdbapi-client
+
+make init           # no API key required
+make editor-up      # start container
+
+make test           # all tests (no live network calls — fully mocked)
+make editor-down
+```
+
+### RAG ingestion — standalone
+
+```bash
+git clone https://github.com/aharbii/movie-finder-rag.git
+cd movie-finder-rag
+
+make init           # build image, create .env, install git hook
+$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RW, QDRANT_COLLECTION_NAME,
+                    #           OPENAI_API_KEY, KAGGLE_API_TOKEN
+make editor-up      # start workspace container
+
+make test           # run tests
+make ingest         # run the full ingestion pipeline (writes to Qdrant Cloud)
+make editor-down
+```
+
+### Frontend — standalone
+
+```bash
+git clone https://github.com/aharbii/movie-finder-frontend.git
+cd movie-finder-frontend
+
+make init           # pull image, npm ci, install git hook
+make editor-up      # start dev server  →  http://localhost:4200
+                    # proxies /api to http://localhost:8000
+                    # (start the backend separately if you need live API calls)
+
+# VS Code: attach to the running 'movie-finder-frontend-dev' container
+
+make check          # typecheck + lint + test-coverage
+make editor-down    # stop
+```
+
+### Branching convention (applies in every repo)
+
+```
+feature/<what-you-are-building>    e.g. feature/sse-reconnect-logic
+fix/<what-you-are-fixing>          e.g. fix/imdbapi-retry-delay
+chore/<maintenance-task>           e.g. chore/bump-langchain-to-0-3-5
+docs/<what-you-are-documenting>    e.g. docs/add-api-sequence-diagram
+hotfix/<critical-fix>              e.g. hotfix/broken-refresh-token
+```
+
+Rules:
+
+- All lowercase, kebab-case
+- Branch from `main`
+- Keep branches short-lived; open a PR when ready
+
+### Commit message format
+
+```
+feat(chain): add gemini embedding provider
+fix(imdbapi): reduce retry base delay from 30s to 2s
+chore(frontend): bump angular to 21.3.0
+docs(backend): clarify Docker-only workflow in README
+```
+
+`<type>(<scope>): <summary in imperative mood, ≤72 chars>`
+
+### When you are done — submodule pointer bump
+
+If your work lives in a child repo and needs to be reflected in a parent:
+
+```bash
+# In the direct parent repo (e.g. backend/):
+git add chain/
+git commit -m "chore(chain): bump to latest main"
+git push
+
+# In the root repo (if the parent also changed):
+git add backend/
+git commit -m "chore(backend): bump to latest main"
+git push
+```
+
+---
+
+## 12. Your first contribution
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout main && git pull
    git checkout -b feature/my-change
@@ -309,25 +456,30 @@ npm run test:ci
 2. **Make your changes** in the relevant submodule (or root if cross-cutting)
 
 3. **Run local checks** before committing:
+
    ```bash
-   # Backend
+   # Backend (from backend/)
    make lint && make test
 
-   # Frontend
-   npm run typecheck && npm run lint && npm run test:ci
+   # Frontend (from frontend/)
+   make check
    ```
 
 4. **Commit** using conventional commits:
+
    ```bash
    git add <files>
    git commit -m "feat(chat): improve session title generation"
    ```
+
    Pre-commit hooks run automatically on `git commit`. Fix any failures before retrying.
 
 5. **Push** and open a pull request:
+
    ```bash
    git push -u origin feature/my-change
    ```
+
    Open the PR on GitHub. Jenkins triggers automatically and runs lint + tests. If the change
    affects project documentation, the GitHub Actions docs workflow also runs generated-page
    preparation and `mkdocs build`.
@@ -338,22 +490,22 @@ npm run test:ci
 
 ---
 
-## 11. Role-specific guides
+## 13. Role-specific guides
 
 Jump to the guide that matches your role:
 
-| Role | Start here |
-|------|-----------|
-| Backend / App engineer | [backend/README.md](backend/README.md) → [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) |
-| AI / Chain engineer | [backend/chain/README.md](backend/chain/README.md) → [backend/chain/CONTRIBUTING.md](backend/chain/CONTRIBUTING.md) |
-| IMDb API engineer | [backend/chain/imdbapi/README.md](backend/chain/imdbapi/README.md) → [backend/chain/imdbapi/CONTRIBUTING.md](backend/chain/imdbapi/CONTRIBUTING.md) |
-| RAG / Data engineer | [backend/rag_ingestion/README.md](backend/rag_ingestion/README.md) → [backend/rag_ingestion/CONTRIBUTING.md](backend/rag_ingestion/CONTRIBUTING.md) |
-| Frontend engineer | [frontend/README.md](frontend/README.md) → [frontend/CONTRIBUTING.md](frontend/CONTRIBUTING.md) |
-| DevOps / Platform | [docs/devops-setup.md](docs/devops-setup.md) |
+| Role                   | Start here                                                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Backend / App engineer | [backend README](https://github.com/aharbii/movie-finder-backend/blob/main/README.md) → [backend CONTRIBUTING.md](https://github.com/aharbii/movie-finder-backend/blob/main/CONTRIBUTING.md)     |
+| AI / Chain engineer    | [chain README](https://github.com/aharbii/movie-finder-chain/blob/main/README.md) → [chain CONTRIBUTING.md](https://github.com/aharbii/movie-finder-chain/blob/main/CONTRIBUTING.md)             |
+| IMDb API engineer      | [imdbapi README](https://github.com/aharbii/imdbapi-client/blob/main/README.md) → [imdbapi CONTRIBUTING.md](https://github.com/aharbii/imdbapi-client/blob/main/CONTRIBUTING.md)                 |
+| RAG / Data engineer    | [rag README](https://github.com/aharbii/movie-finder-rag/blob/main/README.md) → [rag CONTRIBUTING.md](https://github.com/aharbii/movie-finder-rag/blob/main/CONTRIBUTING.md)                     |
+| Frontend engineer      | [frontend README](https://github.com/aharbii/movie-finder-frontend/blob/main/README.md) → [frontend CONTRIBUTING.md](https://github.com/aharbii/movie-finder-frontend/blob/main/CONTRIBUTING.md) |
+| DevOps / Platform      | [docs/devops/setup.md](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md)                                                                                                   |
 
 ---
 
-## 12. Troubleshooting
+## 14. Troubleshooting
 
 ### Submodule directory is empty after cloning
 
@@ -361,46 +513,42 @@ Jump to the guide that matches your role:
 git submodule update --init --recursive
 ```
 
-### `make setup` fails with "uv: command not found"
+### `make init` fails — Docker image pull error
 
-Install uv:
+Ensure Docker Desktop is running and you are logged in:
+
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Then restart your shell or source the profile
-source ~/.zshrc   # or ~/.bashrc
+docker info          # should show server info
+docker pull node:20-alpine   # test connectivity
 ```
 
 ### Backend server fails to start — "could not connect to database"
 
-The PostgreSQL container must be running and healthy before the backend starts.
+The PostgreSQL container may not be healthy yet. Check its status:
+
 ```bash
-make db-stop && make db-start
-# Wait for the container to report "database system is ready to accept connections"
-make run-dev
+cd backend/
+make logs            # look for "database system is ready to accept connections"
+make down && make up # restart the full stack if needed
 ```
 
 ### Backend server fails to start — "missing required environment variable"
 
 Open `.env` and ensure all required variables are set. Refer to `.env.example` for the full list. Common missing values:
+
 - `APP_SECRET_KEY` — generate with `openssl rand -hex 32`
-- `QDRANT_ENDPOINT` / `QDRANT_API_KEY` — request from RAG team
+- `QDRANT_URL` / `QDRANT_API_KEY_RO` — request from RAG team
 - `ANTHROPIC_API_KEY` — request from project lead
 
 ### Frontend shows "Connection refused" or blank chat responses
 
-The backend is not running or not reachable at port 8000. Start it with `make run-dev` or `docker compose up backend postgres`.
-
-### `npm ci` fails with node version errors
-
-Ensure you are using Node 20+:
-```bash
-node --version   # should be v20.x.x or later
-# Use nvm to switch: nvm use 20
-```
+The backend is not running or not reachable at port 8000. Start it with `make up` from `backend/`
+or `docker compose up backend postgres` from the root.
 
 ### Docker build fails — "COPY failed: file not found"
 
 The backend submodules are not initialised. Run:
+
 ```bash
 git submodule update --init --recursive
 docker compose up --build
@@ -409,6 +557,7 @@ docker compose up --build
 ### Pre-commit hook blocks commit — "Possible secret detected"
 
 If the flagged value is not a secret, add `# pragma: allowlist secret` as an inline comment on the same line. Then update the baseline:
+
 ```bash
 detect-secrets scan > .secrets.baseline
 git add .secrets.baseline
@@ -418,14 +567,15 @@ git commit -m "chore: update secrets baseline"
 ### Jenkins webhook not triggered
 
 The ngrok URL may have changed (free plan). Get the new URL:
+
 ```bash
 curl -s http://localhost:4040/api/tunnels | python3 -c \
   "import sys,json; print(json.load(sys.stdin)['tunnels'][0]['public_url'])"
 ```
-Update the GitHub webhook payload URL to `<new-url>/github-webhook/`. See [`docs/devops-setup.md §7`](docs/devops-setup.md#7-jenkins--expose-via-ngrok).
+
+Update the GitHub webhook payload URL to `<new-url>/github-webhook/`. See [`docs/devops/setup.md §7`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md#7-jenkins--expose-via-ngrok).
 
 ### Test failures in CI but passing locally
 
-- Ensure you are on the same Python/Node version as the CI agent (Python 3.13 / Node 20)
 - Check if a pre-existing `.env` file is leaking into the test run — CI uses a clean environment
-- Run `make clean` (backend) or delete `node_modules/` and re-run `npm ci` (frontend)
+- Run `make ci-down && make init` to force a clean image rebuild (backend or frontend)

@@ -15,7 +15,7 @@ with the corresponding `CLAUDE.md`, `GEMINI.md`, and `AGENTS.md`.
 | `backend/`               | FastAPI + uv workspace root (Python 3.13)   |
 | `backend/app/`           | FastAPI routes, auth, SSE streaming         |
 | `backend/chain/`         | LangGraph 8-node AI pipeline                |
-| `backend/chain/imdbapi/`       | Async IMDb REST client                      |
+| `backend/chain/imdbapi/` | Async IMDb REST client                      |
 | `backend/rag_ingestion/` | Offline embedding ingestion (standalone uv) |
 | `frontend/`              | Angular 21 SPA                              |
 | `docs/`                  | MkDocs documentation site                   |

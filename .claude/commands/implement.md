@@ -21,6 +21,7 @@ gh issue view $ARGUMENTS --repo REPO
 ```
 
 Find the **Agent Briefing** section. It tells you:
+
 - Workspace to open (confirm you are in the right one)
 - Branch to create
 - Files to read first
@@ -68,6 +69,7 @@ Label → branch type: `enhancement`→`feature/`, `bug`→`fix/`,
 Follow the acceptance criteria. No extra features. No refactoring of unrelated code.
 
 Standards already in CLAUDE.md (loaded). Quick reference:
+
 - Python: type annotations, line ≤ 100, no bare `except:`, no `print()`, async all the way
 - TypeScript: no `any`, standalone components, signals not BehaviorSubject, strict mode
 - Both: no secrets, tests required, descriptive names
@@ -141,6 +143,7 @@ gh pr create \
 ```
 
 The PR body must:
+
 - Use `Closes #N` or `Part of #N` (match what was in the commit)
 - Fill every template section
 - Note any cross-cutting items left for other repos/issues
@@ -178,6 +181,7 @@ gh issue comment $ARGUMENTS --repo REPO \
 ## Step 12 — Report back
 
 Tell the user:
+
 - PR URL and number
 - Whether the issue is fully closed or partial (and what remains)
 - Cross-cutting items implemented in this PR

@@ -24,14 +24,13 @@ Closes #
 
 ### Code quality
 
-- [ ] `make lint` (backend) / `npm run typecheck && npm run lint` (frontend) — zero errors
-- [ ] `make test` (backend) / `npm run test:ci` (frontend) — zero failures
+- [ ] `make lint` + `make test` (backend) / `make check` (frontend) — zero errors and failures
 - [ ] Test coverage has not decreased
 
 ### Review
 
 - [ ] Conventional commit title: `type(scope): summary`
-- [ ] PR description explains the *why*, not just the *what*
+- [ ] PR description explains the _why_, not just the _what_
 - [ ] PR description discloses the AI authoring tool and model
 - [ ] Reviewer comments are addressed before requesting re-review
 - [ ] Any AI-assisted review comment or approval discloses the review tool and model
@@ -44,7 +43,7 @@ Closes #
 ### Configuration / environment (if applicable)
 
 - [ ] New environment variables added to `.env.example` with placeholder values and comments
-- [ ] `docs/openapi.yaml` updated if any API endpoint was added, changed, or removed
+- [ ] `docs/api/openapi.yaml` updated if any API endpoint was added, changed, or removed
 - [ ] `CHANGELOG.md` updated with a summary under `[Unreleased]`
 
 ### Security

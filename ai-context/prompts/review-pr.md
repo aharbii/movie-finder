@@ -8,6 +8,7 @@ The human decides whether to merge.
 ## Usage
 
 **Codex CLI (most efficient — pipe the diff):**
+
 ```bash
 gh pr view [PR_NUMBER] --repo [REPO] > /tmp/pr.txt
 gh pr diff [PR_NUMBER] --repo [REPO] >> /tmp/pr.txt
@@ -15,6 +16,7 @@ cat /tmp/pr.txt | codex "$(cat ai-context/prompts/review-pr.md)"
 ```
 
 **Gemini CLI:**
+
 ```bash
 gh pr view [PR_NUMBER] --repo [REPO] > /tmp/pr.txt
 gh pr diff [PR_NUMBER] --repo [REPO] >> /tmp/pr.txt
@@ -22,6 +24,7 @@ cat /tmp/pr.txt | gemini "$(cat ai-context/prompts/review-pr.md)"
 ```
 
 **Ollama (local, zero quota):**
+
 ```bash
 gh pr view [PR_NUMBER] --repo [REPO] > /tmp/pr.txt
 gh pr diff [PR_NUMBER] --repo [REPO] >> /tmp/pr.txt
@@ -52,12 +55,14 @@ Blocking findings (must be fixed before merge):
   PR template sections left empty
 
 Non-blocking findings (flag but do not block):
+
 - Missing docstrings on public classes/functions
 - CHANGELOG.md not updated
 - Cross-cutting items for other repos (acceptable if noted in PR body)
 
 **Step 3:** Check cross-cutting completeness.
 Based on what changed, flag if any of these were missed and not noted in the PR body:
+
 - New env vars without `.env.example` update
 - Changed quality check command without updating `.claude/commands/implement.md`
 - New VSCode config without updating CLAUDE.md/GEMINI.md/AGENTS.md tables

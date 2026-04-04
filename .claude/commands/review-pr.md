@@ -52,6 +52,7 @@ gh pr diff $ARGUMENTS --repo REPO
 **Blocking — must be fixed before merge:**
 
 Python:
+
 - Missing type annotations on any public function or method
 - Bare `except:` — must catch specific exception types
 - `print()` or any debug output left in production code
@@ -62,6 +63,7 @@ Python:
 - Missing tests for new logic
 
 TypeScript:
+
 - `any` used (must use `unknown` + narrowing)
 - NgModule introduced
 - BehaviorSubject used for component state (must use Signals)
@@ -69,6 +71,7 @@ TypeScript:
 - Strict mode violations
 
 Both:
+
 - Secrets or API keys in any file
 - Single-letter variable names (outside loop counters and math)
 - Pattern violations (Repository not used for DB, Depends() not used for DI, etc.)
@@ -77,6 +80,7 @@ Both:
 - Issue not linked (`Closes #N` or `Part of #N` missing)
 
 **Non-blocking — flag but do not block merge:**
+
 - Docstrings missing on public classes/functions (note, don't block)
 - CHANGELOG.md not updated
 - Minor style issues already caught by linters

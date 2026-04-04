@@ -14,6 +14,7 @@ This phase has ZERO codebase access — it's pure knowledge retrieval.
 - Getting up to speed on a topic before a planning session
 
 **Do NOT open Claude Code for research.** Use:
+
 - `gemini` — web search + long-context reading (Google AI Pro)
 - `ollama run qwen2.5-coder:14b` — local, zero quota, good for code discussion
 - `claude.ai` web — separate quota pool from Claude Code CLI/extension

@@ -58,6 +58,7 @@ Never `git add -A`.
 ## Step 5 — Open PR (if on a feature branch)
 
 If not already on a `chore/` branch, create one:
+
 ```bash
 git checkout -b chore/bump-$ARGUMENTS-pointer
 ```
@@ -87,6 +88,7 @@ EOF
 ## Step 6 — Comment on related issues
 
 If this bump completes a tracked issue, comment:
+
 ```bash
 gh issue comment [ISSUE_NUMBER] --repo aharbii/movie-finder \
   --body "Submodule pointer bumped in PR #[PR_NUMBER]. [PR_URL]"

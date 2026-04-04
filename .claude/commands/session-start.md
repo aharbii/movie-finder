@@ -17,6 +17,7 @@ git status && git log --oneline -5
 ```
 
 Then summarise:
+
 - **Critical/High open issues** — number, title, one-line description of the problem
 - **Open PRs** — awaiting review, awaiting merge, or blocked
 - **Current branch** and any uncommitted changes

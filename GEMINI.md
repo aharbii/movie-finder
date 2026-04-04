@@ -13,17 +13,17 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 **Repo structure:** recursive Git submodules — each submodule is an independently versioned repo.
 
-| Path | GitHub repo | Role |
-|---|---|---|
-| `.` | `aharbii/movie-finder` | Parent orchestrator |
-| `backend/` | `aharbii/movie-finder-backend` | FastAPI + uv workspace root |
-| `backend/app/` | (nested in backend) | FastAPI application layer |
-| `backend/chain/` | `aharbii/movie-finder-chain` | LangGraph 8-node AI pipeline |
-| `backend/chain/imdbapi/` | `aharbii/imdbapi-client` | Async IMDb REST client |
-| `backend/rag_ingestion/` | `aharbii/movie-finder-rag` | Offline embedding ingestion |
-| `frontend/` | `aharbii/movie-finder-frontend` | Angular 21 SPA |
-| `docs/` | `aharbii/movie-finder-docs` | MkDocs documentation site |
-| `infrastructure/` | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning |
+| Path                     | GitHub repo                           | Role                         |
+| ------------------------ | ------------------------------------- | ---------------------------- |
+| `.`                      | `aharbii/movie-finder`                | Parent orchestrator          |
+| `backend/`               | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root  |
+| `backend/app/`           | (nested in backend)                   | FastAPI application layer    |
+| `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline |
+| `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client       |
+| `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion  |
+| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular 21 SPA               |
+| `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation site    |
+| `infrastructure/`        | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning     |
 
 ---
 
@@ -56,16 +56,17 @@ gh issue list --repo aharbii/movie-finder --state open
 
 ## AI agent context files
 
-| Agent | File | Role |
-|---|---|---|
-| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md` | Primary implementation agent — use slash commands |
-| **Gemini CLI** | `GEMINI.md` | This file — research/exploration + implementation fallback |
-| **OpenAI Codex CLI** | `AGENTS.md` | Secondary implementation agent |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | Per-repo inline suggestions |
+| Agent                                    | File                              | Role                                                       |
+| ---------------------------------------- | --------------------------------- | ---------------------------------------------------------- |
+| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md`                       | Primary implementation agent — use slash commands          |
+| **Gemini CLI**                           | `GEMINI.md`                       | This file — research/exploration + implementation fallback |
+| **OpenAI Codex CLI**                     | `AGENTS.md`                       | Secondary implementation agent                             |
+| **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo inline suggestions                                |
 
 ### Prompts for Gemini CLI
 
 Copy-paste prompts are in `ai-context/prompts/` (available in each submodule too):
+
 - `ai-context/prompts/implement.md` — step-by-step implementation workflow
 - `ai-context/prompts/review-pr.md` — PR review workflow (can pipe `gh pr diff` into it)
 - `ai-context/prompts/research.md` — project context block for research sessions
@@ -99,19 +100,20 @@ in every affected repo.
 
 ## Available toolchain
 
-| Tool | Purpose |
-|---|---|
-| `gh` | GitHub CLI — issues, PRs, secrets, repos |
-| `git` | Version control and submodule workflow |
-| `docker` / `docker compose` | Build and run containers locally |
-| `uv` | Python package manager (backend workspace) |
-| `npm` | Frontend package manager |
-| `plantuml` | Render `.puml` → PNG locally |
-| `mkdocs` | Documentation site (run `./scripts/prepare-docs.sh` first) |
+| Tool                        | Purpose                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `gh`                        | GitHub CLI — issues, PRs, secrets, repos                                            |
+| `git`                       | Version control and submodule workflow                                              |
+| `docker` / `docker compose` | Build and run containers locally                                                    |
+| `uv`                        | Python package manager (backend workspace)                                          |
+| `npm`                       | Frontend package manager                                                            |
+| `mkdocs`                    | Documentation site — `make mkdocs` from root (runs prepare-docs + PlantUML + serve) |
 
-**Structurizr C4 viewer** (local):
+**Docs and architecture viewers** (from repo root):
+
 ```bash
-docker compose -f docker-compose.docs.yml up   # → http://localhost:8080
+make mkdocs        # MkDocs site → http://localhost:8001
+make structurizr   # Structurizr C4 → http://localhost:18080
 ```
 
 **OpenAPI docs** (when backend is running): `http://localhost:8000/docs`
@@ -123,22 +125,24 @@ docker compose -f docker-compose.docs.yml up   # → http://localhost:8080
 Every submodule has its own committed `.vscode/` directory. Workspace coverage is hierarchical —
 opening a parent workspace gives you all capabilities of its children.
 
-| Workspace | Scope |
-|---|---|
-| Root (`movie-finder/`) | All: backend (app/chain/imdbapi/rag) + frontend + docs + Docker full stack |
-| `backend/` | All backend packages: app + chain + imdbapi + rag_ingestion |
-| `backend/chain/` | chain only |
-| `backend/rag_ingestion/` | rag_ingestion only (standalone uv) |
-| `backend/chain/imdbapi/` | imdbapi only |
-| `frontend/` | Angular SPA only |
-| `docs/` | PlantUML + Markdown editing |
-| `infrastructure/` | IaC editing (Terraform/Bicep) |
+| Workspace                | Scope                                                                      |
+| ------------------------ | -------------------------------------------------------------------------- |
+| Root (`movie-finder/`)   | All: backend (app/chain/imdbapi/rag) + frontend + docs + Docker full stack |
+| `backend/`               | All backend packages: app + chain + imdbapi + rag_ingestion                |
+| `backend/chain/`         | chain only                                                                 |
+| `backend/rag_ingestion/` | rag_ingestion only (standalone uv)                                         |
+| `backend/chain/imdbapi/` | imdbapi only                                                               |
+| `frontend/`              | Angular SPA only                                                           |
+| `docs/`                  | PlantUML + Markdown editing                                                |
+| `infrastructure/`        | IaC editing (Terraform/Bicep)                                              |
 
 **Python interpreter paths:**
+
 - `backend/`, `chain/`, `imdbapi/` → `backend/.venv` (`uv sync --all-packages` from `backend/`)
 - `rag_ingestion/` → `rag_ingestion/.venv` (`uv sync` from `rag_ingestion/`)
 
 **When modifying VSCode configs** (`.vscode/*.json`):
+
 - Keep hierarchy consistent: per-package task → parent workspace re-exposes it with `cwd`
 - Verified extension IDs: `ms-python.python`, `ms-python.debugpy`, `charliermarsh.ruff`,
   `ms-python.mypy-type-checker`, `tamasfe.even-better-toml`, `angular.ng-template`,
@@ -153,28 +157,30 @@ opening a parent workspace gives you all capabilities of its children.
 
 ## Technology stack
 
-| Layer | Stack |
-|---|---|
-| Frontend | Angular 21, TypeScript 5.9, nginx, SSE (`EventSource`) |
-| Backend | Python 3.13, FastAPI 0.115+, asyncpg, python-jose, bcrypt |
-| AI pipeline | LangGraph 0.2+, LangChain 0.3+, Claude Haiku (classify), Claude Sonnet (reason/Q&A) |
-| Embeddings | OpenAI `text-embedding-3-large` (3072-dim) |
-| Vector store | Qdrant Cloud (always external — no local container ever) |
-| Database | PostgreSQL 16 (asyncpg pool) |
-| Observability | LangSmith (tracing for LangGraph pipeline) |
-| Package manager | `uv` (Python workspace), `npm` (frontend) |
+| Layer           | Stack                                                                               |
+| --------------- | ----------------------------------------------------------------------------------- |
+| Frontend        | Angular 21, TypeScript 5.9, nginx, SSE (`EventSource`)                              |
+| Backend         | Python 3.13, FastAPI 0.115+, asyncpg, python-jose, bcrypt                           |
+| AI pipeline     | LangGraph 0.2+, LangChain 0.3+, Claude Haiku (classify), Claude Sonnet (reason/Q&A) |
+| Embeddings      | OpenAI `text-embedding-3-large` (3072-dim)                                          |
+| Vector store    | Qdrant Cloud (always external — no local container ever)                            |
+| Database        | PostgreSQL 16 (asyncpg pool)                                                        |
+| Observability   | LangSmith (tracing for LangGraph pipeline)                                          |
+| Package manager | `uv` (Python workspace), `npm` (frontend)                                           |
 
 ---
 
 ## Coding standards
 
 ### Python (all backend submodules)
+
 - **Line length:** 100 characters (`ruff`, `mypy`)
 - **Type annotations:** Required on all public functions — `mypy --strict` must pass
 - **Async all the way:** Never call blocking I/O in an async context
 - **Docstrings:** Required on all public classes and functions (Google style)
 
 ### TypeScript (frontend)
+
 - **Strict mode on** — `noImplicitAny`, `strictNullChecks`
 - **Standalone components** — no NgModules ever
 - **Signals** for all reactive state
@@ -197,7 +203,7 @@ opening a parent workspace gives you all capabilities of its children.
    contributor-facing docs when required checks or merge policy change.
 9. **Diagrams:** Update PlantUML (`.puml`) and Structurizr (`workspace.dsl`).
 10. **Submodule bump:** Commit in submodule, then bump pointer in parent.
-10a. **AI agent context files:** Mirror any workflow/structural change across `CLAUDE.md`,
+    10a. **AI agent context files:** Mirror any workflow/structural change across `CLAUDE.md`,
     `GEMINI.md`, `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`,
     and `ai-context/prompts/` in every affected repo.
 

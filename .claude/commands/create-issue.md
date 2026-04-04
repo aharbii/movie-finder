@@ -51,12 +51,12 @@ Match the live convention, not the template file. If they diverge, follow the li
 
 **movie-finder only creates child issues for its direct submodules:**
 
-| Affected area | Child repo |
-|---|---|
-| Any backend work (app, chain, imdbapi, rag) | `aharbii/movie-finder-backend` |
-| Frontend | `aharbii/movie-finder-frontend` |
-| Documentation | `aharbii/movie-finder-docs` |
-| Infrastructure / Azure / IaC | `aharbii/movie-finder-infrastructure` |
+| Affected area                               | Child repo                            |
+| ------------------------------------------- | ------------------------------------- |
+| Any backend work (app, chain, imdbapi, rag) | `aharbii/movie-finder-backend`        |
+| Frontend                                    | `aharbii/movie-finder-frontend`       |
+| Documentation                               | `aharbii/movie-finder-docs`           |
+| Infrastructure / Azure / IaC                | `aharbii/movie-finder-infrastructure` |
 
 **Do NOT create issues directly in `movie-finder-chain`, `imdbapi-client`, or `movie-finder-rag`
 from this repo.** Those are sub-submodules owned by `movie-finder-backend`. The backend child
@@ -157,6 +157,7 @@ gh project item-add [PROJECT_NUMBER] --owner aharbii --url [CHILD_ISSUE_URL]
 ## Step 10 — Summary
 
 Report:
+
 - Parent issue number and URL
 - Child issue(s) number and URL
 - Sub-issue links created (API or fallback comment)

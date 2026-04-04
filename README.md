@@ -34,20 +34,20 @@ LangGraph Chain                                                   PostgreSQL
 
 This is a **multi-repo monorepo** managed through Git submodules. Each submodule is an independently versioned and deployable unit.
 
-| Submodule | Path | GitHub | Description |
-|-----------|------|--------|-------------|
-| backend | [`backend/`](backend/) | [movie-finder-backend](https://github.com/aharbii/movie-finder-backend) | FastAPI app + LangGraph pipeline integration root |
-| frontend | [`frontend/`](frontend/) | [movie-finder-frontend](https://github.com/aharbii/movie-finder-frontend) | Angular 21 SPA |
-| docs | [`docs/`](docs/) | [movie-finder-docs](https://github.com/aharbii/movie-finder-docs) | Architecture, API spec, DevOps guides |
-| infrastructure | [`infrastructure/`](infrastructure/) | [movie-finder-infrastructure](https://github.com/aharbii/movie-finder-infrastructure) | IaC and provisioning scripts |
+| Submodule      | Path                                 | GitHub                                                                                | Description                                       |
+| -------------- | ------------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| backend        | [`backend/`](backend/)               | [movie-finder-backend](https://github.com/aharbii/movie-finder-backend)               | FastAPI app + LangGraph pipeline integration root |
+| frontend       | [`frontend/`](frontend/)             | [movie-finder-frontend](https://github.com/aharbii/movie-finder-frontend)             | Angular 21 SPA                                    |
+| docs           | [`docs/`](docs/)                     | [movie-finder-docs](https://github.com/aharbii/movie-finder-docs)                     | Architecture, API spec, DevOps guides             |
+| infrastructure | [`infrastructure/`](infrastructure/) | [movie-finder-infrastructure](https://github.com/aharbii/movie-finder-infrastructure) | IaC and provisioning scripts                      |
 
 The **backend** submodule itself integrates four further sub-projects as nested submodules:
 
-| Sub-project | Path | Description |
-|-------------|------|-------------|
-| app | `backend/app/` | FastAPI routers, auth, session store |
-| chain | `backend/chain/` | LangGraph multi-agent pipeline |
-| imdbapi | `backend/chain/imdbapi/` | Async IMDb REST API client |
+| Sub-project   | Path                     | Description                               |
+| ------------- | ------------------------ | ----------------------------------------- |
+| app           | `backend/app/`           | FastAPI routers, auth, session store      |
+| chain         | `backend/chain/`         | LangGraph multi-agent pipeline            |
+| imdbapi       | `backend/chain/imdbapi/` | Async IMDb REST API client                |
 | rag_ingestion | `backend/rag_ingestion/` | Kaggle dataset → embed → Qdrant ingestion |
 
 ---
@@ -67,7 +67,7 @@ $EDITOR .env
 # Required secrets (see Environment variables below):
 #   DB_PASSWORD, APP_SECRET_KEY,
 #   ANTHROPIC_API_KEY, OPENAI_API_KEY,
-#   QDRANT_ENDPOINT, QDRANT_API_KEY
+#   QDRANT_URL, QDRANT_API_KEY_RO
 
 # 3. Build and start all services
 docker compose up --build
@@ -79,7 +79,7 @@ docker compose up --build
 #   PostgreSQL: localhost:5432
 ```
 
-> **Qdrant is not included in docker-compose.** The backend always connects to the production Qdrant Cloud cluster. Obtain `QDRANT_ENDPOINT` and `QDRANT_API_KEY` from the RAG team.
+> **Qdrant is not included in docker-compose.** The backend always connects to the production Qdrant Cloud cluster. Obtain `QDRANT_URL` and `QDRANT_API_KEY_RO` from the RAG team.
 
 ---
 
@@ -89,13 +89,13 @@ If you only need the API (no frontend):
 
 ```bash
 cd backend/
-make setup          # installs deps, pre-commit hooks, copies .env
+make init           # build dev image, create .env from template, install git hook
 $EDITOR .env        # fill in required API keys
-make db-start       # starts local PostgreSQL container
-make run-dev        # http://localhost:8000  (hot-reload)
+make up             # start postgres + backend  →  http://localhost:8000
+make down           # stop when done
 ```
 
-See [`backend/README.md`](backend/README.md) for full backend documentation.
+See [`movie-finder-backend`](https://github.com/aharbii/movie-finder-backend) for full backend documentation.
 
 ---
 
@@ -105,11 +105,11 @@ If you only need the Angular UI (pointing at a running backend):
 
 ```bash
 cd frontend/
-npm ci
-npm start           # http://localhost:4200  (proxies /api → localhost:8000)
+make init           # pull image, npm ci, install git hook
+make editor-up      # start dev container  →  http://localhost:4200  (proxies /api → localhost:8000)
 ```
 
-See [`frontend/README.md`](frontend/README.md) for full frontend documentation.
+See [`movie-finder-frontend`](https://github.com/aharbii/movie-finder-frontend) for full frontend documentation.
 
 ---
 
@@ -117,17 +117,17 @@ See [`frontend/README.md`](frontend/README.md) for full frontend documentation.
 
 Copy `.env.example` to `.env` and fill in all values. Never commit `.env`.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DB_PASSWORD` | Yes | PostgreSQL password |
-| `DATABASE_URL` | Yes | Full PostgreSQL connection URL |
-| `APP_SECRET_KEY` | Yes | JWT signing secret (`openssl rand -hex 32`) |
-| `ANTHROPIC_API_KEY` | Yes | Claude models (LangGraph chain) |
-| `OPENAI_API_KEY` | Yes | OpenAI text-embedding-3-large (RAG search) |
-| `QDRANT_ENDPOINT` | Yes | Qdrant Cloud cluster URL (from RAG team) |
-| `QDRANT_API_KEY` | Yes | Qdrant Cloud API key (from RAG team) |
-| `QDRANT_COLLECTION` | Yes | Collection name — default: `movies` |
-| `LANGCHAIN_API_KEY` | No | LangSmith tracing (optional observability) |
+| Variable                 | Required | Description                                    |
+| ------------------------ | -------- | ---------------------------------------------- |
+| `DB_PASSWORD`            | Yes      | PostgreSQL password                            |
+| `DATABASE_URL`           | Yes      | Full PostgreSQL connection URL                 |
+| `APP_SECRET_KEY`         | Yes      | JWT signing secret (`openssl rand -hex 32`)    |
+| `ANTHROPIC_API_KEY`      | Yes      | Claude models (LangGraph chain)                |
+| `OPENAI_API_KEY`         | Yes      | OpenAI text-embedding-3-large (RAG search)     |
+| `QDRANT_URL`             | Yes      | Qdrant Cloud cluster URL (from RAG team)       |
+| `QDRANT_API_KEY_RO`      | Yes      | Qdrant Cloud read-only API key (from RAG team) |
+| `QDRANT_COLLECTION_NAME` | Yes      | Collection name — default: `movies`            |
+| `LANGCHAIN_API_KEY`      | No       | LangSmith tracing (optional observability)     |
 
 The `imdbapi.dev` REST API requires no authentication.
 
@@ -135,38 +135,38 @@ The `imdbapi.dev` REST API requires no authentication.
 
 ## Tech stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Angular 21, TypeScript 5.9, Vitest, ESLint 9, nginx |
-| Backend | Python 3.13, FastAPI, LangGraph, asyncpg |
-| AI — chain | Anthropic Claude (Haiku for classification, Sonnet for reasoning) |
-| AI — embeddings | OpenAI `text-embedding-3-large` (3072 dimensions) |
-| Vector store | Qdrant Cloud |
-| Relational DB | PostgreSQL 16 |
-| Package manager | npm (frontend), uv (backend — workspace) |
-| Containerisation | Docker multi-stage builds |
-| CI/CD | Jenkins (Multibranch Pipelines) |
-| Registry | Azure Container Registry (ACR) |
-| Cloud | Azure Container Apps, Azure Database for PostgreSQL Flexible Server, Azure Key Vault |
+| Layer            | Technology                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| Frontend         | Angular 21, TypeScript 5.9, Vitest, ESLint 9, nginx                                  |
+| Backend          | Python 3.13, FastAPI, LangGraph, asyncpg                                             |
+| AI — chain       | Anthropic Claude (Haiku for classification, Sonnet for reasoning)                    |
+| AI — embeddings  | OpenAI `text-embedding-3-large` (3072 dimensions)                                    |
+| Vector store     | Qdrant Cloud                                                                         |
+| Relational DB    | PostgreSQL 16                                                                        |
+| Package manager  | npm (frontend), uv (backend — workspace)                                             |
+| Containerisation | Docker multi-stage builds                                                            |
+| CI/CD            | Jenkins (Multibranch Pipelines)                                                      |
+| Registry         | Azure Container Registry (ACR)                                                       |
+| Cloud            | Azure Container Apps, Azure Database for PostgreSQL Flexible Server, Azure Key Vault |
 
 ---
 
 ## API reference
 
-The full API specification lives at [`docs/openapi.yaml`](docs/openapi.yaml) (OpenAPI 3.1.0).
+The full API specification lives at [`docs/api/openapi.yaml`](https://github.com/aharbii/movie-finder-docs/blob/main/api/openapi.yaml) (OpenAPI 3.1.0).
 
-A browsable Swagger UI is at [`docs/swagger-ui.html`](docs/swagger-ui.html) — open it locally or via GitHub Pages.
+A browsable Swagger UI is at [`docs/api/swagger-ui.html`](https://github.com/aharbii/movie-finder-docs/blob/main/api/swagger-ui.html) — open it locally or via GitHub Pages.
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/auth/register` | — | Create account, returns JWT pair |
-| `POST` | `/auth/login` | — | Authenticate, returns JWT pair |
-| `POST` | `/auth/refresh` | — | Exchange refresh token for new JWT pair |
-| `POST` | `/chat` | Bearer | Send message, receive SSE stream |
-| `GET` | `/chat/sessions` | Bearer | List all sessions for current user |
-| `GET` | `/chat/{session_id}/history` | Bearer | Get full message history for a session |
-| `DELETE` | `/chat/{session_id}` | Bearer | Delete session and its messages |
-| `GET` | `/health` | — | Liveness probe |
+| Method   | Path                         | Auth   | Description                             |
+| -------- | ---------------------------- | ------ | --------------------------------------- |
+| `POST`   | `/auth/register`             | —      | Create account, returns JWT pair        |
+| `POST`   | `/auth/login`                | —      | Authenticate, returns JWT pair          |
+| `POST`   | `/auth/refresh`              | —      | Exchange refresh token for new JWT pair |
+| `POST`   | `/chat`                      | Bearer | Send message, receive SSE stream        |
+| `GET`    | `/chat/sessions`             | Bearer | List all sessions for current user      |
+| `GET`    | `/chat/{session_id}/history` | Bearer | Get full message history for a session  |
+| `DELETE` | `/chat/{session_id}`         | Bearer | Delete session and its messages         |
+| `GET`    | `/health`                    | —      | Liveness probe                          |
 
 Access tokens expire in **30 minutes**. Refresh tokens expire in **7 days**.
 
@@ -176,36 +176,34 @@ Access tokens expire in **30 minutes**. Refresh tokens expire in **7 days**.
 
 Three pipeline modes are automatically selected based on Git context:
 
-| Mode | Trigger | What happens |
-|------|---------|-------------|
-| CONTRIBUTION | Feature branch / PR | Lint + test only. Fast feedback, no build. |
-| INTEGRATION | Push to `main` | + Docker build + push `:sha8` `:latest` to ACR + optional staging deploy |
-| RELEASE | `v*` tag | + Push `:v1.2.3` to ACR + production deploy (manual approval on backend) |
+| Mode         | Trigger             | What happens                                                             |
+| ------------ | ------------------- | ------------------------------------------------------------------------ |
+| CONTRIBUTION | Feature branch / PR | Lint + test only. Fast feedback, no build.                               |
+| INTEGRATION  | Push to `main`      | + Docker build + push `:sha8` `:latest` to ACR + optional staging deploy |
+| RELEASE      | `v*` tag            | + Push `:v1.2.3` to ACR + production deploy (manual approval on backend) |
 
 Documentation is validated separately by the `.github/workflows/docs.yml` GitHub Actions workflow.
 Docs-related pull requests run generated-page preparation plus `mkdocs build`, and pushes to `main`
 build and deploy the documentation site to GitHub Pages.
 
-See [`docs/devops-setup.md`](docs/devops-setup.md) for Jenkins setup, Azure provisioning, and credential configuration.
+See [`docs/devops/setup.md`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md) for Jenkins setup, Azure provisioning, and credential configuration.
 
 ---
 
 ## Documentation index
 
-| Document | Audience | Description |
-|----------|----------|-------------|
-| [ONBOARDING.md](ONBOARDING.md) | New team members | Day-zero setup for every role |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | All contributors | Branching, commits, PRs, releases |
-| [backend/README.md](backend/README.md) | Backend / AI teams | Backend architecture and commands |
-| [backend/INTEGRATION.md](backend/INTEGRATION.md) | All teams | Cross-repo workflow and secret sharing |
-| [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) | Backend contributors | Python code standards, testing |
-| [frontend/README.md](frontend/README.md) | Frontend team | Angular architecture and commands |
-| [frontend/CONTRIBUTING.md](frontend/CONTRIBUTING.md) | Frontend contributors | TypeScript standards, testing |
-| [docs/devops-setup.md](docs/devops-setup.md) | DevOps / Platform | Jenkins + Azure full setup guide |
-| [docs/openapi.yaml](docs/openapi.yaml) | API consumers | OpenAPI 3.1.0 machine-readable spec |
-| [docs/swagger-ui.html](docs/swagger-ui.html) | API consumers | Interactive API browser |
-| [docs/workspace.dsl](docs/workspace.dsl) | Architects | Structurizr C4 architecture model |
-| [docs/architecture.mdj](docs/architecture.mdj) | Architects | StarUML class and sequence diagrams |
+| Document                                                                                               | Audience              | Description                            |
+| ------------------------------------------------------------------------------------------------------ | --------------------- | -------------------------------------- |
+| [ONBOARDING.md](ONBOARDING.md)                                                                         | New team members      | Day-zero setup for every role          |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                                                                     | All contributors      | Branching, commits, PRs, releases      |
+| [backend README](https://github.com/aharbii/movie-finder-backend/blob/main/README.md)                  | Backend / AI teams    | Backend architecture and commands      |
+| [backend INTEGRATION.md](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)     | All teams             | Cross-repo workflow and secret sharing |
+| [backend CONTRIBUTING.md](https://github.com/aharbii/movie-finder-backend/blob/main/CONTRIBUTING.md)   | Backend contributors  | Python code standards, testing         |
+| [frontend README](https://github.com/aharbii/movie-finder-frontend/blob/main/README.md)                | Frontend team         | Angular architecture and commands      |
+| [frontend CONTRIBUTING.md](https://github.com/aharbii/movie-finder-frontend/blob/main/CONTRIBUTING.md) | Frontend contributors | TypeScript standards, testing          |
+| [docs/devops/setup.md](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md)         | DevOps / Platform     | Jenkins + Azure full setup guide       |
+| [docs/api/openapi.yaml](https://github.com/aharbii/movie-finder-docs/blob/main/api/openapi.yaml)       | API consumers         | OpenAPI 3.1.0 machine-readable spec    |
+| [docs/api/swagger-ui.html](https://github.com/aharbii/movie-finder-docs/blob/main/api/swagger-ui.html) | API consumers         | Interactive API browser                |
 
 ---
 
@@ -231,11 +229,11 @@ git pull && git submodule update --init --recursive
 
 ## Getting help
 
-| Who | Contact |
-|-----|---------|
-| Backend / App team | See `backend/CONTRIBUTING.md` |
-| Frontend team | See `frontend/CONTRIBUTING.md` |
-| AI / Chain team | See `backend/chain/CONTRIBUTING.md` |
-| IMDb API team | See `backend/chain/imdbapi/CONTRIBUTING.md` |
-| RAG / Data team | See `backend/rag_ingestion/CONTRIBUTING.md` |
-| DevOps / Platform | See `docs/devops-setup.md` |
+| Who                | Contact                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| Backend / App team | See `backend/CONTRIBUTING.md`                                                                        |
+| Frontend team      | See `frontend/CONTRIBUTING.md`                                                                       |
+| AI / Chain team    | See `backend/chain/CONTRIBUTING.md`                                                                  |
+| IMDb API team      | See `backend/chain/imdbapi/CONTRIBUTING.md`                                                          |
+| RAG / Data team    | See `backend/rag_ingestion/CONTRIBUTING.md`                                                          |
+| DevOps / Platform  | See [`docs/devops/setup.md`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md) |
