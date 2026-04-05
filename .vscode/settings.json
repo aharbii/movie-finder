@@ -1,11 +1,22 @@
 {
   // ── PlantUML ────────────────────────────────────────────────────────────────
-  // Uses the stable keg symlink — survives `brew upgrade plantuml`.
-  // macOS/Homebrew: install with `brew install plantuml graphviz`
-  // Linux (apt):    install with `sudo apt install plantuml graphviz`
-  //                 then change the path to `plantuml.jar` accordingly.
-  "plantuml.jar": "/opt/homebrew/opt/plantuml/libexec/plantuml.jar",
-  "plantuml.render": "Local",
+  // VS Code live preview — Alt+D (Option+D on macOS) on any .puml file.
+  //
+  // Uses the local PlantUML Docker server (no host install needed):
+  //   make plantuml   # starts plantuml/plantuml-server on :18088
+  //
+  // Alternative — local install (faster, works offline):
+  //   macOS: brew install plantuml graphviz
+  //     → set "plantuml.render": "Local"
+  //     → set "plantuml.jar": "/opt/homebrew/opt/plantuml/libexec/plantuml.jar"
+  //   Linux: sudo apt install plantuml graphviz
+  //     → set "plantuml.render": "Local"
+  //     → set "plantuml.jar": "/usr/share/plantuml/plantuml.jar"
+  //
+  // Full site build (PlantUML PNGs included automatically — no install needed):
+  //   make mkdocs   # from repo root
+  "plantuml.render": "PlantUMLServer",
+  "plantuml.server": "http://localhost:18088",
   "plantuml.exportFormat": "png",
   "plantuml.exportSubFolder": false,
   "plantuml.previewAutoUpdate": true,
