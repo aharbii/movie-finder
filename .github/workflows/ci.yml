@@ -1,0 +1,204 @@
+# =============================================================================
+# movie-finder — Root orchestration GitHub Actions CI
+#
+# Mirrors the root Jenkinsfile 1:1. Both pipelines must remain in sync.
+#
+# Pipeline:
+#   Build      — build and push backend + frontend images to ACR
+#   Staging    — rolling update of staging Azure Container Apps (main/tags)
+#   Production — rolling update of production Azure Container Apps (tags only,
+#                requires manual approval via GitHub environment protection)
+#
+# Required GitHub Actions secrets (Settings → Secrets and variables → Actions):
+#   ACR_LOGIN_SERVER          Full ACR hostname, e.g. myacr.azurecr.io
+#   ACR_USERNAME              Service principal App ID
+#   ACR_PASSWORD              Service principal client secret
+#   AZURE_SUBSCRIPTION_ID     Azure subscription ID
+#   AZURE_TENANT_ID           Azure tenant ID
+#   AZURE_SP_CLIENT_ID        Service principal App ID for Azure CLI
+#   AZURE_SP_CLIENT_SECRET    Service principal client secret for Azure CLI
+#
+# Required GitHub environments (Settings → Environments):
+#   staging     — no protection rules required (auto-deploy on main)
+#   production  — required reviewer protection rule for manual approval
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      deploy_staging:
+        type: boolean
+        default: true
+        description: Deploy to staging after a successful build.
+      deploy_production:
+        type: boolean
+        default: false
+        description: Deploy to production (requires environment approval).
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BACKEND_IMAGE:  movie-finder-backend
+  FRONTEND_IMAGE: movie-finder-frontend
+
+jobs:
+
+  # -------------------------------------------------------------------------- #
+  resolve-tag:
+    name: Resolve Tag
+    runs-on: ubuntu-latest
+    outputs:
+      build_tag: ${{ steps.tag.outputs.build_tag }}
+    steps:
+      - name: Resolve build tag
+        id: tag
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="${GITHUB_SHA::8}"
+          fi
+          echo "build_tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+  # -------------------------------------------------------------------------- #
+  build:
+    name: Build Images
+    needs: resolve-tag
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TAG: ${{ needs.resolve-tag.outputs.build_tag }}
+    steps:
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Docker login to ACR
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | \
+            docker login "${{ secrets.ACR_LOGIN_SERVER }}" \
+              -u "${{ secrets.ACR_USERNAME }}" --password-stdin
+
+      - name: Build and push backend image
+        run: |
+          FULL="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${BUILD_TAG}"
+          docker pull "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" || true
+          docker build \
+            --cache-from "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
+            -t "${FULL}" \
+            backend/
+          docker push "${FULL}"
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            LATEST="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest"
+            docker tag "${FULL}" "${LATEST}"
+            docker push "${LATEST}"
+          fi
+
+      - name: Build and push frontend image
+        run: |
+          FULL="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${BUILD_TAG}"
+          docker pull "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" || true
+          docker build \
+            --cache-from "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
+            -t "${FULL}" \
+            frontend/
+          docker push "${FULL}"
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            LATEST="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest"
+            docker tag "${FULL}" "${LATEST}"
+            docker push "${LATEST}"
+          fi
+
+      - name: Docker logout
+        if: always()
+        run: docker logout "${{ secrets.ACR_LOGIN_SERVER }}" || true
+
+  # -------------------------------------------------------------------------- #
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [resolve-tag, build]
+    runs-on: ubuntu-latest
+    environment: staging
+    if: >
+      (github.event_name == 'push' &&
+       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_staging == 'true')
+    env:
+      BUILD_TAG: ${{ needs.resolve-tag.outputs.build_tag }}
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: |
+            {
+              "clientId":       "${{ secrets.AZURE_SP_CLIENT_ID }}",
+              "clientSecret":   "${{ secrets.AZURE_SP_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId":       "${{ secrets.AZURE_TENANT_ID }}"
+            }
+
+      - name: Deploy backend to staging
+        run: |
+          az containerapp update \
+            --name    movie-finder-backend-staging \
+            --resource-group movie-finder-staging \
+            --image   "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${BUILD_TAG}"
+
+      - name: Deploy frontend to staging
+        run: |
+          az containerapp update \
+            --name    movie-finder-frontend-staging \
+            --resource-group movie-finder-staging \
+            --image   "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${BUILD_TAG}"
+
+      - name: Azure logout
+        if: always()
+        run: az logout || true
+
+  # -------------------------------------------------------------------------- #
+  deploy-production:
+    name: Deploy to Production
+    needs: [resolve-tag, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production        # requires manual approval (configure in GitHub Environments)
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_production == 'true')
+    env:
+      BUILD_TAG: ${{ needs.resolve-tag.outputs.build_tag }}
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: |
+            {
+              "clientId":       "${{ secrets.AZURE_SP_CLIENT_ID }}",
+              "clientSecret":   "${{ secrets.AZURE_SP_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId":       "${{ secrets.AZURE_TENANT_ID }}"
+            }
+
+      - name: Deploy backend to production
+        run: |
+          az containerapp update \
+            --name    movie-finder-backend \
+            --resource-group movie-finder-prod \
+            --image   "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:${BUILD_TAG}"
+
+      - name: Deploy frontend to production
+        run: |
+          az containerapp update \
+            --name    movie-finder-frontend \
+            --resource-group movie-finder-prod \
+            --image   "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:${BUILD_TAG}"
+
+      - name: Azure logout
+        if: always()
+        run: az logout || true
