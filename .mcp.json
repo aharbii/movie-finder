@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "qdrant-evaluator": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "src/qdrant/main.py"
+      ],
+      "cwd": "${workspaceFolder}/mcp/qdrant-explorer",
+      "env": {
+        "QDRANT_URL": "${env:QDRANT_URL}",
+        "QDRANT_API_KEY_RO": "${env:QDRANT_API_KEY_RO}",
+        "QDRANT_COLLECTION_NAME": "${env:QDRANT_COLLECTION_NAME}",
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+        "OPENAI_EMBEDDING_MODEL": "${env:OPENAI_EMBEDDING_MODEL}"
+      }
+    }
+  }
+}

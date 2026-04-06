@@ -62,9 +62,12 @@ Standards:
 **Step 7:** Run quality checks.
 
 ```
-# Python: uv run pre-commit run --all-files
-# TypeScript: npm run lint && npm test
+# Python repos (backend, chain, imdbapi, rag): make pre-commit
+# Frontend: make pre-commit  (or: make check for full quality gate)
 ```
+
+All repos use a Docker-only contract — `make pre-commit` runs hooks inside the container.
+No host Python or Node installation required.
 
 **Step 8:** Commit.
 
