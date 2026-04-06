@@ -74,3 +74,6 @@ gha-creds-*.json
 # ── Stray artefacts ────────────────────────────────────────────────────────────
 package-lock.json
 mcp-plan.md
+.mcp.json.md
+ai-audit.md
+ai-setup-audit-and-plan.md

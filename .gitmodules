@@ -17,6 +17,7 @@
 [submodule "mcp/qdrant-explorer"]
 	path = mcp/qdrant-explorer
 	url = ../movie-finder-mcp-qdrant.git
+	update = none
 
 [submodule "mcp/langgraph-inspector"]
 	path = mcp/langgraph-inspector
@@ -31,4 +32,9 @@
 [submodule "mcp/imdb-sandbox"]
 	path = mcp/imdb-sandbox
 	url = ../movie-finder-mcp-imdb.git
+	update = none
+
+[submodule "rag"]
+	path = rag
+	url = ../movie-finder-rag.git
 	update = none
