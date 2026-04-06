@@ -70,3 +70,7 @@ docs/architecture/plantuml/*.png
 
 .gemini/
 gha-creds-*.json
+
+# ── Stray artefacts ────────────────────────────────────────────────────────────
+package-lock.json
+mcp-plan.md

@@ -13,3 +13,22 @@
 [submodule "infrastructure"]
 	path = infrastructure
 	url = ../movie-finder-infrastructure.git
+
+[submodule "mcp/qdrant-explorer"]
+	path = mcp/qdrant-explorer
+	url = ../movie-finder-mcp-qdrant.git
+
+[submodule "mcp/langgraph-inspector"]
+	path = mcp/langgraph-inspector
+	url = ../movie-finder-mcp-langgraph.git
+	update = none
+
+[submodule "mcp/schema-inspector"]
+	path = mcp/schema-inspector
+	url = ../movie-finder-mcp-schema.git
+	update = none
+
+[submodule "mcp/imdb-sandbox"]
+	path = mcp/imdb-sandbox
+	url = ../movie-finder-mcp-imdb.git
+	update = none
