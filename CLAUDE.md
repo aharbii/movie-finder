@@ -13,17 +13,24 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 **Repo structure:** recursive Git submodules — each submodule is an independently versioned repo.
 
-| Path                     | GitHub repo                           | Role                         |
-| ------------------------ | ------------------------------------- | ---------------------------- |
-| `.`                      | `aharbii/movie-finder`                | Parent orchestrator          |
-| `backend/`               | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root  |
-| `backend/app/`           | (nested in backend)                   | FastAPI application layer    |
-| `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline |
-| `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client       |
-| `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion  |
-| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular 21 SPA               |
-| `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation site    |
-| `infrastructure/`        | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning     |
+| Path                       | GitHub repo                           | Role                          |
+| -------------------------- | ------------------------------------- | ----------------------------- |
+| `.`                        | `aharbii/movie-finder`                | Parent orchestrator                           |
+| `backend/`                 | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root                   |
+| `backend/app/`             | (nested in backend)                   | FastAPI application layer                     |
+| `backend/chain/`           | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline                  |
+| `backend/chain/imdbapi/`   | `aharbii/imdbapi-client`              | Async IMDb REST client                        |
+| `frontend/`                | `aharbii/movie-finder-frontend`       | Angular 21 SPA                                |
+| `docs/`                    | `aharbii/movie-finder-docs`           | MkDocs documentation site                     |
+| `infrastructure/`          | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning                      |
+| `rag/` †                   | `aharbii/movie-finder-rag`            | Offline embedding ingestion (update = none)   |
+| `mcp/qdrant-explorer/` †   | `aharbii/movie-finder-mcp-qdrant`     | DX: Qdrant RAG Evaluator (update = none)      |
+| `mcp/langgraph-inspector/` †| `aharbii/movie-finder-mcp-langgraph` | DX: LangGraph State Inspector (update = none) |
+| `mcp/schema-inspector/` †  | `aharbii/movie-finder-mcp-schema`     | DX: Postgres Schema Assistant (update = none) |
+| `mcp/imdb-sandbox/` †      | `aharbii/movie-finder-mcp-imdb`       | DX: IMDb API Prompt Sandbox (update = none)   |
+
+† Standalone tools — not required to run the app or CI. Not auto-populated by
+`git submodule update --init`. Clone explicitly: `git submodule update --init <path>`.
 
 ---
 
@@ -64,6 +71,7 @@ This project supports multiple AI coding agents. Each reads its own context file
 | **Gemini CLI**                           | `GEMINI.md`                       | Fallback / research agent. Use for Phase 1 exploration and as implementation fallback. |
 | **OpenAI Codex CLI**                     | `AGENTS.md`                       | Secondary implementation agent. Reads `ai-context/prompts/` for workflow prompts.      |
 | **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions.     |
+| **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant — project context and coding rules.       |
 
 ### Slash commands (Claude Code only)
 
@@ -95,8 +103,8 @@ the codebase speculatively and burn quota finding what the briefing would have t
 
 **Maintenance rule:** any structural change (new pattern, new tool, new workflow, VSCode config
 update, quality check command change) must be mirrored across `CLAUDE.md`, `GEMINI.md`,
-`AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`, and `ai-context/prompts/`
-in every affected repo.
+`AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`, `.cursorrules`,
+`.claude/commands/`, and `ai-context/prompts/` in every affected repo.
 
 ---
 
@@ -104,8 +112,10 @@ in every affected repo.
 
 - `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
   workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
-- `backend/chain`, `backend/chain/imdbapi`, and `backend/rag_ingestion` are gitlinks in
-  `aharbii/movie-finder-backend` and follow the same rule there.
+- `backend/chain` and `backend/chain/imdbapi` are gitlinks in `aharbii/movie-finder-backend`
+  and follow the same rule there.
+- `rag`, `mcp/qdrant-explorer`, `mcp/langgraph-inspector`, `mcp/schema-inspector`,
+  `mcp/imdb-sandbox` are gitlinks in this repo with `update = none`.
 
 ### Issue hierarchy
 
@@ -113,18 +123,19 @@ in every affected repo.
 
 ```
 movie-finder
-  └── movie-finder-backend   ← movie-finder creates child issues here
-        ├── movie-finder-chain      ← backend creates sub-issues here
-        ├── imdbapi-client          ← backend creates sub-issues here
-        └── movie-finder-rag        ← backend creates sub-issues here
-  └── movie-finder-frontend
-  └── movie-finder-docs
-  └── movie-finder-infrastructure
+  ├── movie-finder-backend      ← movie-finder creates child issues here
+  │     ├── movie-finder-chain      ← backend creates sub-issues here
+  │     └── imdbapi-client          ← backend creates sub-issues here
+  ├── movie-finder-frontend
+  ├── movie-finder-docs
+  ├── movie-finder-infrastructure
+  └── movie-finder-rag          ← movie-finder creates child issues here directly
 ```
 
-From the movie-finder root: create child issues only in the four direct repos above.
-When a task involves chain/imdbapi/rag, create a child in `movie-finder-backend`; the
+From the movie-finder root: create child issues in the five direct repos above.
+When a task involves chain/imdbapi, create a child in `movie-finder-backend`; the
 backend workspace then manages its own sub-issues via `/create-issue` in that workspace.
+RAG (`rag/`) is now a direct root submodule — create issues in `movie-finder-rag` directly.
 
 - Root-only changes do not need child submodule issues. Create child issues only for repos whose
   files, docs, or gitlink pointers will change.
@@ -166,6 +177,35 @@ make structurizr   # Structurizr C4 → http://localhost:18080
 
 ---
 
+## MCP servers
+
+Project-level MCP server configuration lives in `.mcp.json` (root workspace).
+Claude Code picks this up automatically when you open the root workspace.
+
+### Local MCP servers (project-built)
+
+| Server              | Submodule               | Status       | Purpose                                    |
+| ------------------- | ----------------------- | ------------ | ------------------------------------------ |
+| `qdrant-evaluator`  | `mcp/qdrant-explorer/`  | ✅ Ready     | Query Qdrant, embed text, evaluate RAG     |
+| `langgraph-inspector` | `mcp/langgraph-inspector/` | 🔧 Planned | Inspect LangGraph state machine runs       |
+| `schema-inspector`  | `mcp/schema-inspector/` | 🔧 Planned   | Postgres schema assistant (introspect DDL) |
+| `imdb-sandbox`      | `mcp/imdb-sandbox/`     | 🔧 Planned   | IMDb API prompt sandbox                    |
+
+### External MCP servers (configured in `.mcp.json`)
+
+| Server     | Package / command                           | Purpose                                       |
+| ---------- | ------------------------------------------- | --------------------------------------------- |
+| `github`   | `@modelcontextprotocol/server-github`       | Issues, PRs, code search across all repos     |
+| `postgres` | `@modelcontextprotocol/server-postgres`     | Live DB queries against the PostgreSQL store  |
+| `kaggle`   | `kaggle-mcp` (uvx)                          | Dataset management and Kaggle API access      |
+| `langsmith`| `langsmith-mcp` (uvx)                       | LangSmith traces, evaluations, prompts        |
+| `azure`    | `@azure/mcp`                                | Azure resource inspection and management      |
+
+**Required env vars for external MCPs:** `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`,
+`KAGGLE_API_TOKEN`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`. Add these to your local `.env`.
+
+---
+
 ## VSCode setup
 
 Every submodule that can be opened as a standalone workspace has its own committed `.vscode/`
@@ -175,11 +215,11 @@ directory with settings, extensions, launch configs, and tasks.
 
 | Workspace                | `.vscode/` contents                               | Scope                                                                               |
 | ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Root (`movie-finder/`)   | settings, extensions, `launch.json`, `tasks.json` | All packages: backend (app/chain/imdbapi/rag) + frontend + docs + Docker full stack |
-| `backend/`               | settings, extensions, `launch.json`, `tasks.json` | All backend packages: app + chain + imdbapi + rag_ingestion                         |
-| `backend/chain/`         | settings, extensions, `launch.json`, `tasks.json` | chain only                                                                          |
-| `backend/rag_ingestion/` | settings, extensions, `launch.json`, `tasks.json` | rag_ingestion only (standalone uv)                                                  |
-| `backend/chain/imdbapi/` | settings, extensions, `launch.json`, `tasks.json` | imdbapi only                                                                        |
+| Root (`movie-finder/`)   | settings, extensions, `launch.json`, `tasks.json` | All packages: backend (app/chain/imdbapi) + rag + frontend + docs + Docker full stack |
+| `backend/`               | settings, extensions, `launch.json`, `tasks.json` | All backend packages: app + chain + imdbapi                                           |
+| `backend/chain/`         | settings, extensions, `launch.json`, `tasks.json` | chain only                                                                            |
+| `backend/chain/imdbapi/` | settings, extensions, `launch.json`, `tasks.json` | imdbapi only                                                                          |
+| `rag/`                   | settings, extensions, `launch.json`, `tasks.json` | rag only (standalone uv)                                                              |
 | `frontend/`              | settings, extensions, `launch.json`, `tasks.json` | Angular SPA only                                                                    |
 | `docs/`                  | settings, extensions                              | PlantUML + Markdown editing                                                         |
 | `infrastructure/`        | settings, extensions                              | IaC editing (Terraform/Bicep)                                                       |
@@ -191,7 +231,7 @@ directory with settings, extensions, launch configs, and tasks.
 | `backend/`               | `${workspaceFolder}/.venv/bin/python`       | `uv sync --all-packages` from `backend/`     |
 | `backend/chain/`         | `${workspaceFolder}/../.venv/bin/python`    | Same as above (workspace member)             |
 | `backend/chain/imdbapi/` | `${workspaceFolder}/../.venv/bin/python`    | Same as above (workspace member)             |
-| `backend/rag_ingestion/` | `${workspaceFolder}/.venv/bin/python`       | `uv sync` from `rag_ingestion/` (standalone) |
+| `rag/`                   | `${workspaceFolder}/.venv/bin/python`       | `uv sync` from `rag/` (standalone)           |
 
 ### Key VSCode behaviours configured
 
@@ -252,7 +292,7 @@ Index: `docs/architecture/decisions/index.md` (also contains the ADR template)
 **How to create an ADR:**
 
 ```bash
-# Copy the template from the index, name it ADR-NNN-short-title.md
+# Copy the template from the index, name it NNNN-short-title.md
 # Status: Proposed → Accepted / Superseded / Deprecated
 # Commit to docs/ submodule first, then bump pointer in parent
 ```
@@ -316,7 +356,7 @@ rather than introducing a new one.
 
 | Pattern                  | Where used                                       | Rule                                                                                                               |
 | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| **Strategy**             | Embedding providers (`rag_ingestion/`, `chain/`) | New provider = new class implementing the provider interface; no `if provider == "openai"` branching in core logic |
+| **Strategy**             | Embedding providers (`rag/`, `chain/`)           | New provider = new class implementing the provider interface; no `if provider == "openai"` branching in core logic |
 | **State machine**        | LangGraph pipeline (`chain/`)                    | New behaviour = new node or edge, not branching inside existing nodes                                              |
 | **Dependency injection** | FastAPI (`app/`)                                 | Use `Depends()` for all shared resources (db pool, auth, config) — never instantiate inside route handlers         |
 | **Adapter**              | `imdbapi/` client                                | The client wraps the external API and maps to internal domain types; callers never see raw HTTP responses          |
@@ -340,7 +380,7 @@ Every submodule has its own `.pre-commit-config.yaml`. Run from within the submo
 **Never `--no-verify`.**
 
 ```bash
-# Python submodules (backend, chain, imdbapi, rag_ingestion)
+# Python submodules (backend, chain, imdbapi, rag)
 uv run pre-commit install   # once per clone
 uv run pre-commit run --all-files
 
@@ -462,7 +502,7 @@ Full detail in `ai-context/issue-agent-briefing-template.md` → "Cross-cutting 
 | 8   | **CI**               | `Jenkinsfile` / `.github/workflows/` reviewed; credentials table updated                              |
 | 9   | **Diagrams**         | `.puml` files updated (never `.mdj`); `workspace.dsl` updated if C4 relations changed                 |
 | 10  | **Docs**             | `docs/` pages, `README.md`, `CHANGELOG.md` updated; OpenAPI verified                                  |
-| 10a | **AI context**       | `CLAUDE.md` / `GEMINI.md` / `AGENTS.md` mirrored; `.claude/commands/` + `ai-context/prompts/` updated |
+| 10a | **AI context**       | `CLAUDE.md` / `GEMINI.md` / `AGENTS.md` / `.junie/guidelines.md` / `.cursorrules` mirrored; `.claude/commands/` + `ai-context/prompts/` updated |
 | 11  | **Other submodules** | Explicitly assess chain / app / imdbapi / rag / frontend / infra / docs                               |
 | 12  | **Pointer bump**     | `git add <submodule>` → `chore(<sub>): bump to latest main` after merge                               |
 | 13  | **PR**               | Submodule PR + parent pointer-bump PR; both linked to issues; AI tool + model disclosed               |

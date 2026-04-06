@@ -74,13 +74,48 @@ or npm installation.
 | git                        | 2.20+   | System package manager or [git-scm.com](https://git-scm.com)       |
 | Docker Desktop (or Engine) | 24+     | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)  |
 | make                       | 3.81+   | Standard on macOS/Linux; `winget install GnuWin32.Make` on Windows |
+| gh (GitHub CLI)            | 2.40+   | [cli.github.com](https://cli.github.com) — required for issue/PR workflow |
 
-### Recommended VS Code extensions
+### Optional — AI coding agent tools
+
+| Tool                       | Version | Purpose                                                            |
+| -------------------------- | ------- | ------------------------------------------------------------------ |
+| Claude Code (CLI)          | latest  | `npm install -g @anthropic-ai/claude-code` — primary AI agent     |
+| Gemini CLI                 | latest  | `npm install -g @google/gemini-cli` — fallback / research agent   |
+| OpenAI Codex CLI           | latest  | `npm install -g @openai/codex` — secondary implementation agent   |
+
+### Optional — MCP servers (local AI tooling)
+
+MCP servers in `mcp/` run as subprocesses. The `qdrant-evaluator` is ready; others are planned.
+
+| Tool          | Version | Purpose                                         |
+| ------------- | ------- | ----------------------------------------------- |
+| uv            | 0.5+    | `pip install uv` or `curl -LsSf ...` — runs local MCP servers via `uvx` |
+| Node.js / npx | 20+     | For external MCP servers (GitHub, PostgreSQL, Azure) |
+
+### Optional — Infrastructure work
+
+Only needed if you are working on the Terraform IaC (`infrastructure/`).
+
+| Tool       | Version | Install                                                    |
+| ---------- | ------- | ---------------------------------------------------------- |
+| Terraform  | 1.7+    | [developer.hashicorp.com/terraform](https://developer.hashicorp.com/terraform/install) |
+| Azure CLI  | 2.60+   | [learn.microsoft.com/cli/azure](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) |
+| TFLint     | latest  | `brew install tflint` or from [github.com/terraform-linters](https://github.com/terraform-linters/tflint) |
+
+### Recommended IDE extensions
+
+**VS Code / Cursor:**
 
 - Remote Containers (Dev Containers)
 - Python + Pylance + Ruff (backend work inside the container)
 - ESLint + Prettier + Angular Language Service (frontend work inside the container)
-- Docker, GitLens
+- Docker, GitLens, Coverage Gutters, Makefile Tools
+
+**JetBrains (PyCharm / WebStorm / IntelliJ IDEA):**
+
+- Dev Containers plugin — to open the devcontainer from `backend/`, `chain/`, `rag_ingestion/`, or `frontend/`
+- Python plugin (if not PyCharm), Ruff, mypy, Coverage Support
 
 ---
 
@@ -139,53 +174,74 @@ $EDITOR .env
 
 ---
 
-## 6. Ports and URLs at a glance
+## 6. Which stack to run
+
+There are two separate compose stacks. **Never run both at the same time** — they bind to the same ports (5432, 8000) by default.
+
+| You want to…                                              | Use this stack                    | Command                           |
+| --------------------------------------------------------- | --------------------------------- | --------------------------------- |
+| Run the full app (postgres + backend + frontend together) | Root compose (`movie-finder/`)    | `make up` from root               |
+| Develop the backend (hot-reload, source mounts, debugger) | Backend standalone (`backend/`)   | `make up` from `backend/`         |
+| Develop the frontend (Angular live reload)                | Frontend standalone (`frontend/`) | `make editor-up` from `frontend/` |
+
+> The root compose uses the production `runtime` image — no source mounts, no hot-reload.
+> For backend development, use `cd backend/ && make up` instead.
+
+---
+
+## 7. Ports and URLs at a glance
 
 Every service has a fixed default port. All are configurable via `.env` if there is a conflict.
 
 | Service                       | Default URL                                              | Who starts it                                         |
 | ----------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
-| Frontend (nginx / dev server) | http://localhost:80 (prod) · http://localhost:4200 (dev) | `docker compose up` / `make editor-up` in `frontend/` |
-| Backend (FastAPI)             | http://localhost:8000                                    | `docker compose up` / `make up` in `backend/`         |
+| Frontend (nginx / dev server) | http://localhost:80 (prod) · http://localhost:4200 (dev) | `make up` from root / `make editor-up` in `frontend/` |
+| Backend (FastAPI)             | http://localhost:8000                                    | `make up` from root / `make up` in `backend/`         |
 | Backend Swagger UI            | http://localhost:8000/docs                               | Same as backend                                       |
-| Backend health                | http://localhost:8000/health                             | Same as backend                                       |
-| PostgreSQL                    | localhost:5432                                           | `docker compose up` / `make up` in `backend/`         |
+| Backend liveness              | http://localhost:8000/health/live                        | Same as backend                                       |
+| Backend readiness             | http://localhost:8000/health/ready                       | Same as backend (checks DB connection)                |
+| PostgreSQL                    | localhost:5432                                           | `make up` from root / `make up` in `backend/`         |
 | MkDocs docs site              | http://localhost:8001                                    | `make mkdocs` from repo root                          |
+| Structurizr C4                | http://localhost:18080                                   | `make structurizr` from repo root                     |
+| PlantUML server               | http://localhost:18088                                   | `make plantuml` from repo root                        |
 
 > Qdrant Cloud is always **external** — no local Qdrant container exists.
 
 ---
 
-## 7. Run the full stack with Docker
+## 8. Run the full stack with Docker
 
-This is the fastest way to verify everything works end-to-end.
+This is the fastest way to verify everything works end-to-end. The backend container automatically runs `alembic upgrade head` before uvicorn starts — allow up to 45 seconds for the backend to become healthy on first boot.
 
 ```bash
-# Build and start all services (postgres, backend, frontend)
+# From the repo root
+make up              # start postgres + backend + frontend (detached)
+make logs            # stream all service logs
+make down            # stop and remove containers
+```
+
+Or with raw compose if you need rebuild:
+
+```bash
 docker compose up --build
-
-# Run in background
-docker compose up --build -d
-
-# Stream logs from a specific service
-docker compose logs -f backend
 ```
 
 **Service endpoints:**
 
-| Service                  | URL                          | Notes                                  |
-| ------------------------ | ---------------------------- | -------------------------------------- |
-| Frontend (Angular SPA)   | http://localhost:80          | nginx-served                           |
-| Backend (FastAPI)        | http://localhost:8000        |                                        |
-| Backend interactive docs | http://localhost:8000/docs   | Swagger UI (auto-generated)            |
-| Backend health check     | http://localhost:8000/health | Returns `{"status": "ok"}`             |
-| PostgreSQL               | localhost:5432               | `movie_finder` DB, `movie_finder` user |
+| Service                  | URL                                | Notes                                  |
+| ------------------------ | ---------------------------------- | -------------------------------------- |
+| Frontend (Angular SPA)   | http://localhost:80                | nginx-served                           |
+| Backend (FastAPI)        | http://localhost:8000              |                                        |
+| Backend interactive docs | http://localhost:8000/docs         | Swagger UI (auto-generated)            |
+| Backend liveness         | http://localhost:8000/health/live  | Returns `{"status": "ok"}`             |
+| Backend readiness        | http://localhost:8000/health/ready | Returns 503 if DB unreachable          |
+| PostgreSQL               | localhost:5432                     | `movie_finder` DB, `movie_finder` user |
 
 **Stop and clean up:**
 
 ```bash
-docker compose down          # stop containers
-docker compose down -v       # also delete the postgres volume (wipes DB data)
+make down                        # stop containers
+docker compose down -v           # also delete the postgres volume (wipes DB data)
 ```
 
 ---
@@ -506,6 +562,49 @@ Jump to the guide that matches your role:
 ---
 
 ## 14. Troubleshooting
+
+### Port already in use — "bind: address already in use" on 5432 or 8000
+
+Both the root compose stack and the backend standalone stack default to the same ports. You can only run one at a time.
+
+```bash
+# Find which compose stack is using the port
+docker ps --format "table {{.Names}}\t{{.Ports}}"
+
+# Stop the backend standalone stack if it is running
+cd backend/ && make down
+
+# Then start the root stack
+cd .. && make up
+```
+
+### Backend container reported as unhealthy
+
+The backend runs `alembic upgrade head` before starting. On first boot with a fresh database this takes 15–30 seconds. The health check `start_period` is 45 seconds — wait for it before concluding there is a problem.
+
+Check what the container is doing:
+
+```bash
+docker compose logs backend     # look for "alembic upgrade" and "Application startup complete"
+docker inspect movie-finder-backend | grep -A5 '"Health"'
+```
+
+If the container exits immediately, a required env var is likely missing from `.env`. Check `.env.example` for the full list and regenerate:
+
+```bash
+cp .env.example .env && $EDITOR .env
+```
+
+### `make db-backup` or `make db-restore` fails — "No such container"
+
+Each stack has its own backup targets. Use the one that matches which postgres is currently running:
+
+| Running stack                                  | Backup                           | Restore                                              |
+| ---------------------------------------------- | -------------------------------- | ---------------------------------------------------- |
+| Root compose (`make up` from root)             | `make db-backup` from root       | `make db-restore FILE=backups/db_<ts>.sql` from root |
+| Backend standalone (`make up` from `backend/`) | `make db-backup` from `backend/` | `make db-restore FILE=...` from `backend/`           |
+
+Running `make db-backup` from the wrong directory fails because each stack has a different project name (`movie-finder` vs `movie-finder-backend-local`).
 
 ### Submodule directory is empty after cloning
 

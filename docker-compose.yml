@@ -1,35 +1,57 @@
 # =============================================================================
-# movie-finder — full-stack docker-compose (local development)
+# movie-finder — full-stack docker-compose (integration / full-stack run)
+#
+# PURPOSE: Run the complete application stack for end-to-end verification or
+# full-stack local use. Uses the production-grade `runtime` image (no source
+# mounts, no hot-reload). For day-to-day backend development use the standalone
+# backend stack instead:
+#
+#   cd backend/ && make up      ← backend dev stack (hot-reload, source mounts)
+#
+# ⚠  NEVER run this stack at the same time as the backend standalone stack.
+#    Both bind to port 5432 (postgres) and 8000 (backend) by default.
+#    Only one stack can hold those host ports at a time.
 #
 # Services (default stack — always started):
 #   postgres    — session / user database (PostgreSQL)
-#   backend     — FastAPI + LangGraph application
+#   backend     — FastAPI + LangGraph application (runtime image, with migrations)
 #   frontend    — Angular SPA served by nginx (reverse-proxies API to backend)
 #
 # Services (opt-in profiles):
 #   structurizr — Structurizr Lite C4 architecture viewer (--profile docs)
 #   mkdocs      — MkDocs documentation server           (--profile mkdocs)
 #
-# Qdrant is NOT included here. Both backend and frontend always connect to
-# the production Qdrant Cloud cluster via QDRANT_URL / QDRANT_API_KEY_RO.
+# Qdrant is NOT included here. The backend connects to the production Qdrant
+# Cloud cluster via QDRANT_URL / QDRANT_API_KEY_RO in your .env file.
 # There is no local Qdrant container.
 #
 # Usage:
 #   cp .env.example .env && $EDITOR .env              # fill in secrets (first run)
-#   docker compose up --build                         # full application stack
-#   docker compose up frontend                        # only frontend + its deps
+#   make up                                           # full application stack
 #   docker compose logs -f backend                    # stream backend logs
+#   make down                                         # stop and clean up
 #   docker compose --profile docs up structurizr      # C4 viewer   → http://localhost:18080
-#   docker compose --profile mkdocs up mkdocs         # Docs server → http://localhost:8001
+#   make mkdocs                                       # Docs server → http://localhost:8001
+#
+# Backup and restore:
+#   make db-backup                                  # dump full-stack database
+#   make db-restore FILE=backups/db_<timestamp>.sql # restore into full-stack database
+#   cd backend/ && make db-backup                   # dump backend standalone database
 #
 # Submodules must be initialised before building:
 #   git submodule update --init --recursive
 # =============================================================================
 
+name: movie-finder
+
 services:
 
   # ---------------------------------------------------------------------------
   # PostgreSQL — session and user database
+  #
+  # The init script creates the `movie_finder_test` database on first bootstrap
+  # so that `make test` (run from backend/) works against this postgres instance
+  # without creating a second container.
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
@@ -42,6 +64,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-movie_finder} -d ${DB_NAME:-movie_finder}"]
       interval: 10s
@@ -51,7 +74,14 @@ services:
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # Backend — FastAPI application
+  # Backend — FastAPI application (production runtime image)
+  #
+  # Uses the `runtime` Dockerfile target: no source mounts, no hot-reload.
+  # The entrypoint (start-backend.sh) runs `alembic upgrade head` before
+  # starting uvicorn, so migrations run automatically on every `docker compose up`.
+  #
+  # For backend development with hot-reload, use the standalone stack instead:
+  #   cd backend/ && make up
   # ---------------------------------------------------------------------------
   backend:
     build:
@@ -65,20 +95,35 @@ services:
     env_file:
       - .env
     environment:
-      # Override DATABASE_URL so backend reaches the compose postgres service
-      DATABASE_URL: "postgresql://${DB_USER:-movie_finder}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-movie_finder}"
+      # Always point the app at the compose-internal postgres service.
+      # This overrides DATABASE_URL from .env (which may point to localhost).
+      DATABASE_URL: "postgresql://${DB_USER:-movie_finder}:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/${DB_NAME:-movie_finder}"
+
+      # Defaults for app runtime settings (override via .env if needed).
+      APP_ENV:  ${APP_ENV:-production}
+      APP_PORT: ${APP_PORT:-8000}
+
+      # CORS must explicitly allow the frontend origin.
+      # Override in .env for production domains.
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost","http://localhost:80"]}
+
+      # Legacy Qdrant variable names — compatibility bridge until chain#9 merges.
+      # Remove once movie-finder-chain#9 is merged and deployed.
+      QDRANT_ENDPOINT:   ${QDRANT_URL:-}
+      QDRANT_API_KEY:    ${QDRANT_API_KEY_RO:-}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION_NAME:-movies}
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test:
-        - "CMD-SHELL"
-        - |
-          python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"
+      # /health/live — liveness probe, no DB required. Consistent with the
+      # Dockerfile HEALTHCHECK and backend standalone docker-compose.yml.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=3)"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 45s
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
@@ -112,8 +157,9 @@ services:
   #   open http://localhost:18080
   #
   # Port 18080 avoids conflicts with Jenkins (8080) and FastAPI (8000).
-  # Reads workspace.dsl from docs/architecture/ (read-only mount).
-  # No .env file or application secrets required.
+  # Mounts docs/architecture read-write because Structurizr Local writes
+  # workspace.json and .structurizr/ alongside workspace.dsl.
+  # Generated files are gitignored. No .env file or application secrets required.
   # ---------------------------------------------------------------------------
   structurizr:
     profiles: [docs]
@@ -121,9 +167,32 @@ services:
     container_name: movie-finder-structurizr
     command: local
     ports:
-      - "18080:8080"
+      - "0.0.0.0:18080:8080"
     volumes:
-      - ./docs/architecture:/usr/local/structurizr:ro
+      - ./docs/architecture:/usr/local/structurizr
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # PlantUML server — local render server for VS Code live diagram preview
+  #
+  # Powers the VS Code jebbs.plantuml extension in "PlantUMLServer" mode so
+  # you do not need a local plantuml/graphviz install. No host install required.
+  #
+  # Start with:
+  #   make plantuml     # → http://localhost:18088
+  #
+  # Then open any .puml file in VS Code and press Alt+D (Option+D on macOS).
+  # The extension sends the diagram source to this server and shows the preview.
+  #
+  # Port 18088 — avoids conflicts with Jenkins (8080), FastAPI (8000),
+  # Structurizr (18080), and MkDocs (8001).
+  # ---------------------------------------------------------------------------
+  plantuml:
+    profiles: [plantuml]
+    image: plantuml/plantuml-server:jetty
+    container_name: movie-finder-plantuml
+    ports:
+      - "0.0.0.0:18088:8080"
     restart: "no"
 
   # ---------------------------------------------------------------------------
@@ -134,8 +203,7 @@ services:
   # Requires: plantuml + graphviz are included in the image build.
   #
   # Start with:
-  #   docker compose --profile mkdocs up mkdocs
-  #   open http://localhost:8001
+  #   make mkdocs     # → http://localhost:8001
   #
   # Port 8001 matches mkdocs.yml dev_addr to avoid conflict with FastAPI (8000).
   # Mounts repo root read-write so prepare-docs.sh can write generated files.
@@ -148,7 +216,8 @@ services:
     image: movie-finder-mkdocs:local
     container_name: movie-finder-mkdocs
     ports:
-      - "8001:8001"
+      - "0.0.0.0:8001:8001"
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - .:/workspace
     working_dir: /workspace

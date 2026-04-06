@@ -18,6 +18,7 @@ on:
       # Submodule README files (pointer changes trigger a full rebuild)
       - "backend"
       - "frontend"
+      - "rag"
 
   pull_request:
     branches: [main]
@@ -33,6 +34,7 @@ on:
       # Submodule README files (pointer changes trigger a full rebuild)
       - "backend"
       - "frontend"
+      - "rag"
 
   # Allow manual trigger from the GitHub Actions UI
   workflow_dispatch:
@@ -66,13 +68,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout with all submodules ─────────────────────────────────────
+      # ── 1. Checkout with app submodules ─────────────────────────────────────
+      # 'submodules: recursive' populates backend, frontend, docs (and their
+      # children). rag/ and mcp/* use 'update = none' so they are skipped here
+      # and initialised explicitly in the next step.
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v6.0.1
         with:
           submodules: recursive
           fetch-depth: 0 # full history required for git-revision-date plugin
           token: ${{ secrets.GH_PAT }} # PAT with repo scope — required to clone private submodules
+
+      # ── 1b. Populate rag/ for docs build ────────────────────────────────────
+      # rag uses update = none (offline tool, not required to run the app or CI).
+      # The recursive checkout skips it. Docs need rag/README.md, so we do a
+      # shallow clone directly with the PAT to avoid credential-helper ambiguity
+      # that affects cross-repo submodule init in GH Actions.
+      - name: Populate rag for docs build
+        run: |
+          set -euo pipefail
+          rm -rf rag
+          git clone --depth 1 \
+            "https://x-access-token:${{ secrets.GH_PAT }}@github.com/aharbii/movie-finder-rag.git" \
+            rag
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
@@ -105,7 +123,7 @@ jobs:
             -e 's|](frontend/README\.md)|](services/frontend.md)|g' \
             -e 's|](backend/chain/README\.md)|](services/chain.md)|g' \
             -e 's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
-            -e 's|](backend/rag_ingestion/README\.md)|](services/rag-ingestion.md)|g' \
+            -e 's|](rag/README\.md)|](services/rag-ingestion.md)|g' \
             -e 's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
             -e 's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
             -e 's|](docs/devops-setup\.md\b|](devops/setup.md|g' \
@@ -124,7 +142,7 @@ jobs:
             -e 's|](frontend/README\.md)|](../services/frontend.md)|g' \
             -e 's|](backend/chain/README\.md)|](../services/chain.md)|g' \
             -e 's|](backend/chain/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
-            -e 's|](backend/rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+            -e 's|](rag/README\.md)|](../services/rag-ingestion.md)|g' \
             -e 's|](docs/devops-setup\.md\b|](../devops/setup.md|g' \
             -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
             -e 's|](docs/architecture/|](../architecture/|g' \
@@ -179,13 +197,10 @@ jobs:
             docs/services/imdbapi.md
 
           # ── services/rag-ingestion.md ─────────────────────────────────────────
-          cp backend/rag_ingestion/README.md docs/services/rag-ingestion.md
+          cp rag/README.md docs/services/rag-ingestion.md
           sed -i \
-            -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
-            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
-            -e 's|](\.\./README\.md)|](backend.md)|g' \
-            -e 's|](\.\./chain/README\.md)|](chain.md)|g' \
-            -e 's|](\.\./imdbapi/README\.md)|](imdbapi.md)|g' \
+            -e 's|](CONTRIBUTING\.md)|](../contributing/rag-ingestion.md)|g' \
+            -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/rag-ingestion.md)|g' \
             docs/services/rag-ingestion.md
 
           # ── contributing/backend.md ───────────────────────────────────────────

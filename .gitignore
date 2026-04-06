@@ -8,6 +8,9 @@
 *.key
 *.p12
 
+# ── Database backups ─────────────────────────────────────────────────────────
+backups/
+
 # ── MkDocs build output ──────────────────────────────────────────────────────
 site/
 
@@ -67,3 +70,10 @@ docs/architecture/plantuml/*.png
 
 .gemini/
 gha-creds-*.json
+
+# ── Stray artefacts ────────────────────────────────────────────────────────────
+package-lock.json
+mcp-plan.md
+.mcp.json.md
+ai-audit.md
+ai-setup-audit-and-plan.md

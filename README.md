@@ -52,12 +52,24 @@ The **backend** submodule itself integrates four further sub-projects as nested 
 
 ---
 
+## Which compose to use
+
+| Scenario                                                       | Stack to use                      | Command                           |
+| -------------------------------------------------------------- | --------------------------------- | --------------------------------- |
+| Run the full app end-to-end (verify everything works together) | Root compose (`movie-finder/`)    | `make up` from root               |
+| Backend development (hot-reload, source mounts, debugger)      | Backend standalone (`backend/`)   | `make up` from `backend/`         |
+| Frontend development (Angular dev server, live reload)         | Frontend standalone (`frontend/`) | `make editor-up` from `frontend/` |
+
+> **Never run the root compose and backend standalone at the same time.** Both bind to port 5432 (postgres) and 8000 (backend) by default. Running both causes an "address already in use" error.
+
+---
+
 ## Quick start — full stack (Docker)
 
 **Prerequisites:** Docker 24+, git 2.20+
 
 ```bash
-# 1. Clone with all submodules (backend nested submodules are included)
+# 1. Clone with all submodules
 git clone --recurse-submodules https://github.com/aharbii/movie-finder.git
 cd movie-finder
 
@@ -70,7 +82,7 @@ $EDITOR .env
 #   QDRANT_URL, QDRANT_API_KEY_RO
 
 # 3. Build and start all services
-docker compose up --build
+make up
 
 # Services
 #   Frontend:   http://localhost:80
@@ -79,13 +91,15 @@ docker compose up --build
 #   PostgreSQL: localhost:5432
 ```
 
+The backend container runs `alembic upgrade head` automatically before starting. On first run with a fresh database this adds ~15-30 seconds before the backend is ready.
+
 > **Qdrant is not included in docker-compose.** The backend always connects to the production Qdrant Cloud cluster. Obtain `QDRANT_URL` and `QDRANT_API_KEY_RO` from the RAG team.
 
 ---
 
 ## Quick start — backend standalone
 
-If you only need the API (no frontend):
+For backend development (hot-reload, debugger, source mounts):
 
 ```bash
 cd backend/
@@ -128,8 +142,15 @@ Copy `.env.example` to `.env` and fill in all values. Never commit `.env`.
 | `QDRANT_API_KEY_RO`      | Yes      | Qdrant Cloud read-only API key (from RAG team) |
 | `QDRANT_COLLECTION_NAME` | Yes      | Collection name — default: `movies`            |
 | `LANGCHAIN_API_KEY`      | No       | LangSmith tracing (optional observability)     |
+| `CORS_ORIGINS`           | Yes      | JSON array of allowed browser origins          |
+| `GLOBAL_RATE_LIMIT`      | No       | Global API fallback rate limit                 |
+| `AUTH_RATE_LIMIT`        | No       | Login/token route rate limit                   |
+| `CHAT_RATE_LIMIT`        | No       | Authenticated chat route rate limit            |
+| `MAX_MESSAGE_LENGTH`     | No       | Maximum accepted user message length           |
 
 The `imdbapi.dev` REST API requires no authentication.
+The backend container applies `alembic upgrade head` during startup before the
+FastAPI process begins serving requests.
 
 ---
 
