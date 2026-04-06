@@ -9,12 +9,63 @@
       ],
       "cwd": "${workspaceFolder}/mcp/qdrant-explorer",
       "env": {
-        "QDRANT_URL": "${env:QDRANT_URL}",
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+        "OPENAI_EMBEDDING_MODEL": "${env:OPENAI_EMBEDDING_MODEL}",
         "QDRANT_API_KEY_RO": "${env:QDRANT_API_KEY_RO}",
         "QDRANT_COLLECTION_NAME": "${env:QDRANT_COLLECTION_NAME}",
-        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
-        "OPENAI_EMBEDDING_MODEL": "${env:OPENAI_EMBEDDING_MODEL}"
+        "QDRANT_URL": "${env:QDRANT_URL}"
       }
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${env:DATABASE_URL}"
+      ]
+    },
+    "kaggle": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "kaggle-mcp"
+      ],
+      "env": {
+        "KAGGLE_API_TOKEN": "${env:KAGGLE_API_TOKEN}"
+      }
+    },
+    "langsmith": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "langsmith-mcp"
+      ],
+      "env": {
+        "LANGSMITH_API_KEY": "${env:LANGSMITH_API_KEY}",
+        "LANGSMITH_PROJECT": "${env:LANGSMITH_PROJECT}"
+      }
+    },
+    "azure": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ]
     }
   }
 }

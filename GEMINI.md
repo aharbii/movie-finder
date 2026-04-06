@@ -13,17 +13,21 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 **Repo structure:** recursive Git submodules — each submodule is an independently versioned repo.
 
-| Path                     | GitHub repo                           | Role                         |
-| ------------------------ | ------------------------------------- | ---------------------------- |
-| `.`                      | `aharbii/movie-finder`                | Parent orchestrator          |
-| `backend/`               | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root  |
-| `backend/app/`           | (nested in backend)                   | FastAPI application layer    |
-| `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline |
-| `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client       |
-| `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion  |
-| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular 21 SPA               |
-| `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation site    |
-| `infrastructure/`        | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning     |
+| Path                       | GitHub repo                           | Role                          |
+| -------------------------- | ------------------------------------- | ----------------------------- |
+| `.`                        | `aharbii/movie-finder`                | Parent orchestrator           |
+| `backend/`                 | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root   |
+| `backend/app/`             | (nested in backend)                   | FastAPI application layer     |
+| `backend/chain/`           | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline  |
+| `backend/chain/imdbapi/`   | `aharbii/imdbapi-client`              | Async IMDb REST client        |
+| `backend/rag_ingestion/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
+| `frontend/`                | `aharbii/movie-finder-frontend`       | Angular 21 SPA                |
+| `docs/`                    | `aharbii/movie-finder-docs`           | MkDocs documentation site     |
+| `infrastructure/`          | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning      |
+| `mcp/qdrant-explorer/`     | `aharbii/movie-finder-mcp-qdrant`     | DX: Qdrant RAG Evaluator      |
+| `mcp/langgraph-inspector/` | `aharbii/movie-finder-mcp-langgraph`  | DX: LangGraph State Inspector |
+| `mcp/schema-inspector/`    | `aharbii/movie-finder-mcp-schema`     | DX: Postgres Schema Assistant |
+| `mcp/imdb-sandbox/`        | `aharbii/movie-finder-mcp-imdb`       | DX: IMDb API Prompt Sandbox   |
 
 ---
 
@@ -62,6 +66,7 @@ gh issue list --repo aharbii/movie-finder --state open
 | **Gemini CLI**                           | `GEMINI.md`                       | This file — research/exploration + implementation fallback |
 | **OpenAI Codex CLI**                     | `AGENTS.md`                       | Secondary implementation agent                             |
 | **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo inline suggestions                                |
+| **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant               |
 
 ### Prompts for Gemini CLI
 
@@ -78,8 +83,8 @@ Template: `ai-context/issue-agent-briefing-template.md`
 The briefing lists exact files to read — without it, do not explore the codebase speculatively.
 
 **Maintenance rule:** any structural change must be mirrored across `CLAUDE.md`, `GEMINI.md`,
-`AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`, and `ai-context/prompts/`
-in every affected repo.
+`AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`, `.cursorrules`,
+`.claude/commands/`, and `ai-context/prompts/` in every affected repo.
 
 ---
 

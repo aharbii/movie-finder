@@ -1,0 +1,44 @@
+# Movie Finder — Cursor Rules
+
+You are working in the Movie Finder monorepo root.
+Primary reference: CLAUDE.md (loaded automatically by Claude Code, also valid for Cursor).
+
+## Architecture summary
+
+- `backend/` — FastAPI + LangGraph pipeline (Python 3.13, uv workspace)
+- `frontend/` — Angular 21 SPA (TypeScript 5.9)
+- `docs/` — MkDocs site + PlantUML diagrams + Structurizr C4 + ADRs
+- `infrastructure/` — Terraform IaC (Azure primary)
+- `mcp/` — Internal MCP servers (qdrant-explorer is the only implemented one)
+
+## Development contract
+
+All quality commands run inside Docker — never on the host.
+
+```
+make up              # start the full stack
+make down            # stop all containers
+make mkdocs          # docs site → http://localhost:8001
+make structurizr     # C4 diagrams → http://localhost:18080
+```
+
+## Cross-cutting rules
+
+- Python: mypy --strict, ruff (100 chars), no bare except, no print(), async all the way
+- TypeScript: no any, standalone components, signals not BehaviorSubject, strict mode
+- No secrets in code — detect-secrets pre-commit hook enforces this
+- Conventional Commits: type(scope): summary
+- Tests are required on every PR
+
+## CI/CD
+
+Per-repo pipelines: Lint + Test only (no image build).
+Root pipeline (Jenkins + GitHub Actions): Build images → Deploy staging → Production gate.
+
+## What NOT to do
+
+- Never `git add -A` — submodule state and secrets can be staged accidentally
+- Never `--no-verify` pre-commit
+- Never push directly to main
+- Never instantiate shared resources inside route handlers — use FastAPI `Depends()`
+- Never add `if provider == "openai":` branching — use the Strategy pattern

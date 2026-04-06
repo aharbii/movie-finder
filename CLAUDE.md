@@ -13,17 +13,21 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 
 **Repo structure:** recursive Git submodules — each submodule is an independently versioned repo.
 
-| Path                     | GitHub repo                           | Role                         |
-| ------------------------ | ------------------------------------- | ---------------------------- |
-| `.`                      | `aharbii/movie-finder`                | Parent orchestrator          |
-| `backend/`               | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root  |
-| `backend/app/`           | (nested in backend)                   | FastAPI application layer    |
-| `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline |
-| `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client       |
-| `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion  |
-| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular 21 SPA               |
-| `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation site    |
-| `infrastructure/`        | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning     |
+| Path                       | GitHub repo                           | Role                          |
+| -------------------------- | ------------------------------------- | ----------------------------- |
+| `.`                        | `aharbii/movie-finder`                | Parent orchestrator           |
+| `backend/`                 | `aharbii/movie-finder-backend`        | FastAPI + uv workspace root   |
+| `backend/app/`             | (nested in backend)                   | FastAPI application layer     |
+| `backend/chain/`           | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline  |
+| `backend/chain/imdbapi/`   | `aharbii/imdbapi-client`              | Async IMDb REST client        |
+| `backend/rag_ingestion/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
+| `frontend/`                | `aharbii/movie-finder-frontend`       | Angular 21 SPA                |
+| `docs/`                    | `aharbii/movie-finder-docs`           | MkDocs documentation site     |
+| `infrastructure/`          | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning      |
+| `mcp/qdrant-explorer/`     | `aharbii/movie-finder-mcp-qdrant`     | DX: Qdrant RAG Evaluator      |
+| `mcp/langgraph-inspector/` | `aharbii/movie-finder-mcp-langgraph`  | DX: LangGraph State Inspector |
+| `mcp/schema-inspector/`    | `aharbii/movie-finder-mcp-schema`     | DX: Postgres Schema Assistant |
+| `mcp/imdb-sandbox/`        | `aharbii/movie-finder-mcp-imdb`       | DX: IMDb API Prompt Sandbox   |
 
 ---
 
@@ -64,6 +68,7 @@ This project supports multiple AI coding agents. Each reads its own context file
 | **Gemini CLI**                           | `GEMINI.md`                       | Fallback / research agent. Use for Phase 1 exploration and as implementation fallback. |
 | **OpenAI Codex CLI**                     | `AGENTS.md`                       | Secondary implementation agent. Reads `ai-context/prompts/` for workflow prompts.      |
 | **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions.     |
+| **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant — project context and coding rules.       |
 
 ### Slash commands (Claude Code only)
 
@@ -95,8 +100,8 @@ the codebase speculatively and burn quota finding what the briefing would have t
 
 **Maintenance rule:** any structural change (new pattern, new tool, new workflow, VSCode config
 update, quality check command change) must be mirrored across `CLAUDE.md`, `GEMINI.md`,
-`AGENTS.md`, `.github/copilot-instructions.md`, `.claude/commands/`, and `ai-context/prompts/`
-in every affected repo.
+`AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`, `.cursorrules`,
+`.claude/commands/`, and `ai-context/prompts/` in every affected repo.
 
 ---
 
@@ -163,6 +168,35 @@ make structurizr   # Structurizr C4 → http://localhost:18080
 ```
 
 **OpenAPI docs** (when backend is running): `http://localhost:8000/docs`
+
+---
+
+## MCP servers
+
+Project-level MCP server configuration lives in `.mcp.json` (root workspace).
+Claude Code picks this up automatically when you open the root workspace.
+
+### Local MCP servers (project-built)
+
+| Server              | Submodule               | Status       | Purpose                                    |
+| ------------------- | ----------------------- | ------------ | ------------------------------------------ |
+| `qdrant-evaluator`  | `mcp/qdrant-explorer/`  | ✅ Ready     | Query Qdrant, embed text, evaluate RAG     |
+| `langgraph-inspector` | `mcp/langgraph-inspector/` | 🔧 Planned | Inspect LangGraph state machine runs       |
+| `schema-inspector`  | `mcp/schema-inspector/` | 🔧 Planned   | Postgres schema assistant (introspect DDL) |
+| `imdb-sandbox`      | `mcp/imdb-sandbox/`     | 🔧 Planned   | IMDb API prompt sandbox                    |
+
+### External MCP servers (configured in `.mcp.json`)
+
+| Server     | Package / command                           | Purpose                                       |
+| ---------- | ------------------------------------------- | --------------------------------------------- |
+| `github`   | `@modelcontextprotocol/server-github`       | Issues, PRs, code search across all repos     |
+| `postgres` | `@modelcontextprotocol/server-postgres`     | Live DB queries against the PostgreSQL store  |
+| `kaggle`   | `kaggle-mcp` (uvx)                          | Dataset management and Kaggle API access      |
+| `langsmith`| `langsmith-mcp` (uvx)                       | LangSmith traces, evaluations, prompts        |
+| `azure`    | `@azure/mcp`                                | Azure resource inspection and management      |
+
+**Required env vars for external MCPs:** `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`,
+`KAGGLE_API_TOKEN`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`. Add these to your local `.env`.
 
 ---
 
@@ -462,7 +496,7 @@ Full detail in `ai-context/issue-agent-briefing-template.md` → "Cross-cutting 
 | 8   | **CI**               | `Jenkinsfile` / `.github/workflows/` reviewed; credentials table updated                              |
 | 9   | **Diagrams**         | `.puml` files updated (never `.mdj`); `workspace.dsl` updated if C4 relations changed                 |
 | 10  | **Docs**             | `docs/` pages, `README.md`, `CHANGELOG.md` updated; OpenAPI verified                                  |
-| 10a | **AI context**       | `CLAUDE.md` / `GEMINI.md` / `AGENTS.md` mirrored; `.claude/commands/` + `ai-context/prompts/` updated |
+| 10a | **AI context**       | `CLAUDE.md` / `GEMINI.md` / `AGENTS.md` / `.junie/guidelines.md` / `.cursorrules` mirrored; `.claude/commands/` + `ai-context/prompts/` updated |
 | 11  | **Other submodules** | Explicitly assess chain / app / imdbapi / rag / frontend / infra / docs                               |
 | 12  | **Pointer bump**     | `git add <submodule>` → `chore(<sub>): bump to latest main` after merge                               |
 | 13  | **PR**               | Submodule PR + parent pointer-bump PR; both linked to issues; AI tool + model disclosed               |
