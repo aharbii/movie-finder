@@ -29,7 +29,8 @@
 .PHONY: help init build up down ci-down logs ps shell \
         db-backup db-restore db-upgrade db-downgrade \
         db-current db-history db-revision \
-        plantuml structurizr mkdocs
+        plantuml structurizr mkdocs \
+        submodules-app submodules-tools submodules-all submodules-sync
 
 .DEFAULT_GOAL := help
 
@@ -77,11 +78,18 @@ help:
 	@echo "    structurizr    Start Structurizr C4 viewer              → http://localhost:18080"
 	@echo ""
 	@echo "  Per-service quality commands (lint, test, check) live in each submodule's Makefile:"
-	@echo "    backend/              make lint | make check | make test"
-	@echo "    frontend/             make lint | make check | make test"
-	@echo "    backend/chain/        make check"
+	@echo "    backend/                make lint | make check | make test"
+	@echo "    frontend/               make lint | make check | make test"
+	@echo "    backend/chain/          make check"
 	@echo "    backend/chain/imdbapi/  make check"
-	@echo "    backend/rag_ingestion/ make check"
+	@echo "    rag/                    make check"
+	@echo ""
+	@echo "  Submodules"
+	@echo "    submodules-app     Init app submodules (backend, frontend, docs, infra + children)"
+	@echo "                       Tool submodules (rag, mcp/*) are skipped — they use update=none"
+	@echo "    submodules-tools   Init all tool submodules (rag, mcp/*) explicitly"
+	@echo "    submodules-all     Init everything — app submodules + all tool submodules"
+	@echo "    submodules-sync    Sync .gitmodules URLs + set update=none in local .git/config"
 	@echo ""
 
 # ---------------------------------------------------------------------------
@@ -159,3 +167,48 @@ structurizr:
 
 mkdocs:
 	$(COMPOSE) --profile mkdocs up -d mkdocs
+
+# ---------------------------------------------------------------------------
+# Submodules
+#
+# Policy: submodules that are NOT required to run the app or CI use
+# update = none in .gitmodules so they are skipped by 'git submodule update
+# --init --recursive'. Developers who need them must init explicitly.
+#
+# Affected submodules (update = none):
+#   rag/                — offline embedding pipeline (data management tool)
+#   mcp/qdrant-explorer — Qdrant RAG evaluator (DX tool)
+#   mcp/langgraph-inspector — LangGraph state inspector (DX tool)
+#   mcp/schema-inspector    — Postgres schema assistant (DX tool)
+#   mcp/imdb-sandbox        — IMDb API sandbox (DX tool)
+# ---------------------------------------------------------------------------
+
+# Tool submodule list — update as new update=none submodules are added
+TOOL_SUBMODULES := rag mcp/qdrant-explorer mcp/langgraph-inspector mcp/schema-inspector mcp/imdb-sandbox
+
+submodules-sync:
+	@echo ">>> Syncing submodule URLs from .gitmodules to local .git/config..."
+	git submodule sync --recursive
+	@echo ">>> Setting update=none in local .git/config for tool submodules..."
+	@for path in $(TOOL_SUBMODULES); do \
+		name=$$(git config -f .gitmodules --name-only --get-regexp "submodule\..*\.path" "$$path" | sed 's/\.path$$//'); \
+		git config "$$name.update" none && echo "  $$name → update = none"; \
+	done
+	@echo ">>> Done. Run 'git config --list | grep submodule' to verify."
+
+submodules-app:
+	@echo ">>> Initialising app submodules (backend, frontend, docs, infrastructure)..."
+	@$(MAKE) submodules-sync
+	git submodule update --init --recursive
+	@echo ">>> App submodules ready. Tool submodules (rag, mcp/*) skipped — use 'make submodules-tools' if needed."
+
+submodules-tools:
+	@echo ">>> Initialising tool submodules (rag, mcp/*)..."
+	git submodule update --init $(TOOL_SUBMODULES)
+	@echo ">>> Tool submodules ready."
+
+submodules-all:
+	@echo ">>> Initialising all submodules (app + tools)..."
+	@$(MAKE) submodules-app
+	@$(MAKE) submodules-tools
+	@echo ">>> All submodules ready."
