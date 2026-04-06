@@ -74,13 +74,48 @@ or npm installation.
 | git                        | 2.20+   | System package manager or [git-scm.com](https://git-scm.com)       |
 | Docker Desktop (or Engine) | 24+     | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/)  |
 | make                       | 3.81+   | Standard on macOS/Linux; `winget install GnuWin32.Make` on Windows |
+| gh (GitHub CLI)            | 2.40+   | [cli.github.com](https://cli.github.com) — required for issue/PR workflow |
 
-### Recommended VS Code extensions
+### Optional — AI coding agent tools
+
+| Tool                       | Version | Purpose                                                            |
+| -------------------------- | ------- | ------------------------------------------------------------------ |
+| Claude Code (CLI)          | latest  | `npm install -g @anthropic-ai/claude-code` — primary AI agent     |
+| Gemini CLI                 | latest  | `npm install -g @google/gemini-cli` — fallback / research agent   |
+| OpenAI Codex CLI           | latest  | `npm install -g @openai/codex` — secondary implementation agent   |
+
+### Optional — MCP servers (local AI tooling)
+
+MCP servers in `mcp/` run as subprocesses. The `qdrant-evaluator` is ready; others are planned.
+
+| Tool          | Version | Purpose                                         |
+| ------------- | ------- | ----------------------------------------------- |
+| uv            | 0.5+    | `pip install uv` or `curl -LsSf ...` — runs local MCP servers via `uvx` |
+| Node.js / npx | 20+     | For external MCP servers (GitHub, PostgreSQL, Azure) |
+
+### Optional — Infrastructure work
+
+Only needed if you are working on the Terraform IaC (`infrastructure/`).
+
+| Tool       | Version | Install                                                    |
+| ---------- | ------- | ---------------------------------------------------------- |
+| Terraform  | 1.7+    | [developer.hashicorp.com/terraform](https://developer.hashicorp.com/terraform/install) |
+| Azure CLI  | 2.60+   | [learn.microsoft.com/cli/azure](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) |
+| TFLint     | latest  | `brew install tflint` or from [github.com/terraform-linters](https://github.com/terraform-linters/tflint) |
+
+### Recommended IDE extensions
+
+**VS Code / Cursor:**
 
 - Remote Containers (Dev Containers)
 - Python + Pylance + Ruff (backend work inside the container)
 - ESLint + Prettier + Angular Language Service (frontend work inside the container)
-- Docker, GitLens
+- Docker, GitLens, Coverage Gutters, Makefile Tools
+
+**JetBrains (PyCharm / WebStorm / IntelliJ IDEA):**
+
+- Dev Containers plugin — to open the devcontainer from `backend/`, `chain/`, `rag_ingestion/`, or `frontend/`
+- Python plugin (if not PyCharm), Ruff, mypy, Coverage Support
 
 ---
 
