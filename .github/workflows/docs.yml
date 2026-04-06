@@ -79,11 +79,18 @@ jobs:
           fetch-depth: 0 # full history required for git-revision-date plugin
           token: ${{ secrets.GH_PAT }} # PAT with repo scope — required to clone private submodules
 
-      # ── 1b. Initialise rag/ explicitly ──────────────────────────────────────
-      # rag uses update = none (offline tool, not part of the app runtime).
-      # Docs need its README.md, so we init it here only.
-      - name: Initialise rag submodule
-        run: git submodule update --init rag
+      # ── 1b. Populate rag/ for docs build ────────────────────────────────────
+      # rag uses update = none (offline tool, not required to run the app or CI).
+      # The recursive checkout skips it. Docs need rag/README.md, so we do a
+      # shallow clone directly with the PAT to avoid credential-helper ambiguity
+      # that affects cross-repo submodule init in GH Actions.
+      - name: Populate rag for docs build
+        run: |
+          set -euo pipefail
+          rm -rf rag
+          git clone --depth 1 \
+            "https://x-access-token:${{ secrets.GH_PAT }}@github.com/aharbii/movie-finder-rag.git" \
+            rag
 
       # ── 2. Set up Python ────────────────────────────────────────────────────
       - name: Set up Python
