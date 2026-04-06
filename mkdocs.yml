@@ -138,7 +138,10 @@ nav:
           - Register: architecture/decisions/index.md
           - ADR-001 Initial Architecture: architecture/decisions/ADR-001-initial-architecture.md
           - ADR-002 Docker-Only Developer Contract: architecture/decisions/ADR-002-docker-only-developer-contract.md
-          - ADR-003 Persistent LangGraph Checkpointing: architecture/decisions/ADR-003-persistent-langgraph-checkpointing.md
+          - ADR-003 Adopt MCP for Internal AI Tooling: architecture/decisions/ADR-003-adopt-mcp-for-internal-tooling.md
+          - ADR-004 Standalone MCP Repositories: architecture/decisions/ADR-004-standalone-mcp-repositories.md
+          - ADR-005 GitHub Actions Mirror and Root Pipeline: architecture/decisions/ADR-005-github-actions-mirror-and-root-pipeline.md
+          - ADR-006 Terraform IaC: architecture/decisions/ADR-006-terraform-iac.md
 
   - Services:
       - Service Map: services/index.md
@@ -159,3 +162,4 @@ nav:
 
   - Internal:
       - Agent Queries: internal/agent-queries.md
+      - MCP Tooling: internal/mcp-tooling.md
