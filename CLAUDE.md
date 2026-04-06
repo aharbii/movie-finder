@@ -286,7 +286,7 @@ Index: `docs/architecture/decisions/index.md` (also contains the ADR template)
 **How to create an ADR:**
 
 ```bash
-# Copy the template from the index, name it ADR-NNN-short-title.md
+# Copy the template from the index, name it NNNN-short-title.md
 # Status: Proposed → Accepted / Superseded / Deprecated
 # Commit to docs/ submodule first, then bump pointer in parent
 ```

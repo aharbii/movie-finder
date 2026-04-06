@@ -39,6 +39,11 @@ DB_REVISION  ?= head
 MESSAGE      ?= describe_change
 FILE         ?=
 
+# Pass host UID/GID to containers that write to host paths (mkdocs, structurizr).
+# This prevents generated files from being created as root on the host.
+export UID   := $(shell id -u)
+export GID   := $(shell id -g)
+
 help:
 	@echo ""
 	@echo "movie-finder — root stack targets"

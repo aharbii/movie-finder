@@ -167,7 +167,7 @@ services:
     container_name: movie-finder-structurizr
     command: local
     ports:
-      - "18080:8080"
+      - "0.0.0.0:18080:8080"
     volumes:
       - ./docs/architecture:/usr/local/structurizr
     restart: "no"
@@ -192,7 +192,7 @@ services:
     image: plantuml/plantuml-server:jetty
     container_name: movie-finder-plantuml
     ports:
-      - "18088:8080"
+      - "0.0.0.0:18088:8080"
     restart: "no"
 
   # ---------------------------------------------------------------------------
@@ -216,7 +216,8 @@ services:
     image: movie-finder-mkdocs:local
     container_name: movie-finder-mkdocs
     ports:
-      - "8001:8001"
+      - "0.0.0.0:8001:8001"
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - .:/workspace
     working_dir: /workspace
