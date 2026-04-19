@@ -127,3 +127,23 @@ Before declaring any task done, verify:
 11. All AI context files mirrored (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.junie/guidelines.md`,
     `.github/copilot-instructions.md`, `.cursorrules`)
 12. Submodule pointer bumped after merge
+
+---
+
+## AI Personas
+
+This project uses specialised AI personas. Reference them in JetBrains AI chat or switch to the appropriate tool:
+
+| Persona   | JetBrains AI prompt               | Claude Code    | Gemini CLI       |
+|-----------|-----------------------------------|----------------|------------------|
+| Architect | "Act as architect: [topic]"       | `/architect`   | `@architect`     |
+| Developer | "Act as developer: implement #N"  | `/implement`   | `@developer`     |
+| Reviewer  | "Act as reviewer: review PR #N"   | `/review-pr`   | `@reviewer`      |
+| Debugger  | "Act as debugger: [symptom]"      | `/debug`       | `@debugger`      |
+| Mentor    | "Act as mentor: explain [topic]"  | `/mentor`      | `@mentor`        |
+| PM        | "Act as PM: organise backlog"     | `/pm`          | `@pm`            |
+| SDET      | "Act as SDET: write tests for X"  | `/sdet`        | n/a              |
+| Auditor   | "Act as auditor: audit [area]"    | `/auditor`     | n/a              |
+
+Full persona definitions: `.ai/personas/` directory.
+Persona prompts for Copilot Chat: `.github/prompts/` directory.

@@ -67,24 +67,32 @@ This project supports multiple AI coding agents. Each reads its own context file
 
 | Agent                                    | File                              | Notes                                                                                  |
 | ---------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------- |
-| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md`                       | Primary tool. VSCode extension and CLI share the same context.                         |
-| **Gemini CLI**                           | `GEMINI.md`                       | Fallback / research agent. Use for Phase 1 exploration and as implementation fallback. |
-| **OpenAI Codex CLI**                     | `AGENTS.md`                       | Secondary implementation agent. Reads `ai-context/prompts/` for workflow prompts.      |
-| **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo file. Root and submodules can each define their own Copilot instructions.     |
-| **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant — project context and coding rules.       |
+| **Claude Code** (VSCode extension + CLI) | `CLAUDE.md`, `.claude/skills/`, `.claude/commands/` | Primary. Skills: `/implement`, `/architect`, `/debug`, `/review-pr` etc. |
+| **Gemini CLI**                           | `GEMINI.md`, `.gemini/skills/`, `.gemini/commands/`, `.gemini/agents/` | Fallback. Commands: `/implement`, `/architect`, `/debug`. Subagents: `@pipeline-debugger`, `@test-runner`. |
+| **OpenAI Codex CLI**                     | `AGENTS.md`, `.agents/skills/`, `.codex/config.toml` | Secondary implementation agent. Skills auto-activate by description. |
+| **GitHub Copilot**                       | `.github/copilot-instructions.md`, `.github/prompts/` | Per-repo inline suggestions. Use `#file:.github/prompts/*.md` in Copilot Chat. |
+| **Cursor / Antigravity**                 | `.cursor/rules/*.mdc`, `.cursorrules` | Auto-activated MDC rules per file type and task. |
+| **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant.                                          |
 
-### Slash commands (Claude Code only)
+### Claude Code skills and slash commands
 
-`.claude/commands/` exists in the root workspace and in every submodule workspace.
-Type `/` in Claude Code to see available commands.
+`.claude/skills/` — preferred format with YAML frontmatter, subagent isolation, path scoping.
+`.claude/commands/` — legacy format, still works, used for workflow commands.
+Type `/` in Claude Code to see available skills and commands.
 
-| Command                       | Phase          | Where to run            |
+| Skill / Command               | Phase          | Where to run            |
 | ----------------------------- | -------------- | ----------------------- |
 | `/session-start`              | Status check   | Root workspace          |
 | `/create-issue [description]` | Issue creation | Root workspace          |
 | `/implement [issue-number]`   | Implementation | **Submodule workspace** |
 | `/review-pr [pr-number]`      | Code review    | **Submodule workspace** |
 | `/bump-submodule [path]`      | After merge    | Root workspace          |
+| `/architect [topic]`          | Design         | Root or submodule       |
+| `/debug [symptom]`            | Investigation  | Root or submodule       |
+| `/mentor [concept]`           | Learning       | Any workspace           |
+| `/pm [task]`                  | Backlog        | Root workspace          |
+| `/sdet [scope]`               | Testing        | Root or submodule       |
+| `/devops [task]`              | Tooling/CI     | Root workspace          |
 
 ### Copy-paste prompts (Codex CLI / Gemini CLI / Ollama)
 
@@ -193,16 +201,23 @@ Claude Code picks this up automatically when you open the root workspace.
 
 ### External MCP servers (configured in `.mcp.json`)
 
-| Server     | Package / command                           | Purpose                                       |
-| ---------- | ------------------------------------------- | --------------------------------------------- |
-| `github`   | `@modelcontextprotocol/server-github`       | Issues, PRs, code search across all repos     |
-| `postgres` | `@modelcontextprotocol/server-postgres`     | Live DB queries against the PostgreSQL store  |
-| `kaggle`   | `kaggle-mcp` (uvx)                          | Dataset management and Kaggle API access      |
-| `langsmith`| `langsmith-mcp` (uvx)                       | LangSmith traces, evaluations, prompts        |
-| `azure`    | `@azure/mcp`                                | Azure resource inspection and management      |
+| Server     | Package / command                           | Status | Purpose                                       |
+| ---------- | ------------------------------------------- | ------ | --------------------------------------------- |
+| `github`   | `@modelcontextprotocol/server-github`       | ✅     | Issues, PRs, code search across all repos     |
+| `postgres` | `@modelcontextprotocol/server-postgres`     | ⚠️     | Live DB queries — needs `DATABASE_URL`        |
+| `kaggle`   | `kaggle-mcp` (uvx)                          | ✅     | Dataset management and Kaggle API access      |
+| `azure`    | `@azure/mcp`                                | ✅     | Azure resource inspection and management      |
 
-**Required env vars for external MCPs:** `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`,
-`KAGGLE_API_TOKEN`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`. Add these to your local `.env`.
+**Required env vars:** `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`,
+`KAGGLE_API_TOKEN`. Add these to your local `.env`.
+
+**LangSmith:** tracing is passive — set `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`,
+`LANGSMITH_PROJECT` in your `.env`. No MCP server needed; the SDK instruments automatically.
+
+**Gemini CLI note:** the `github` built-in extension (`~/.gemini/extensions/github/`)
+overrides the stdio server config and attempts to connect to GitHub Copilot's MCP endpoint
+(`api.githubcopilot.com/mcp/`). GitHub MCP in Gemini requires a Copilot subscription.
+The `qdrant-evaluator`, `kaggle`, and `jenkins-local` servers work correctly.
 
 ---
 

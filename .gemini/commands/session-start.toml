@@ -1,0 +1,14 @@
+description = "Start a Movie Finder dev session: check open issues and current branch"
+prompt = """
+Check the current work status for Movie Finder.
+
+1. `gh issue list --repo aharbii/movie-finder --state open` — list open issues
+2. `git status && git branch --show-current` — current branch state
+3. Group issues by severity: Critical → High → Medium → Low
+4. Identify any in-progress branches
+5. Recommend next action based on issue priority
+
+Do not start implementing anything. Just report status and recommend next action.
+
+{{args}}
+"""

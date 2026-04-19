@@ -1,0 +1,48 @@
+---
+description: Angular and TypeScript coding standards — auto-loads when editing TypeScript, HTML, or SCSS files in the frontend.
+globs: ["frontend/**/*.ts", "frontend/**/*.html", "frontend/**/*.scss", "frontend/**/*.spec.ts"]
+alwaysApply: false
+---
+
+# Angular Standards — Movie Finder Frontend
+
+## Stack
+
+- Angular 21, TypeScript 5.9, nginx, SSE (`EventSource`)
+- Tests: Vitest
+- Linting: ESLint 9 flat config + Prettier
+- Line length: 120 chars (TypeScript / HTML / SCSS)
+
+## Hard rules
+
+- **Standalone components only** — no NgModules ever
+- **Signals for all reactive state** — no `BehaviorSubject` for component-local state
+- **Strict mode on** — `noImplicitAny`, `strictNullChecks` enforced
+- **No `any`** — use `unknown` + type narrowing instead
+- **Prefer `readonly` and `const`** everywhere applicable
+- **No `console.log()`** in production code
+- ESLint 9 flat config + Prettier must pass before commit
+
+## Angular design patterns
+
+| Pattern                     | Rule                                                                     |
+|-----------------------------|--------------------------------------------------------------------------|
+| **Smart / Dumb components** | Smart = owns services + signals + state. Dumb = `@Input()` only.         |
+| **Facade service**          | Components never call `HttpClient` directly — always through a facade.   |
+| **Signal-based state**      | `signal()`, `computed()`, `effect()` — not `BehaviorSubject`             |
+| **SSE streaming**           | `EventSource` lives in a dedicated service — never instantiated in a component |
+
+## Pre-commit
+
+```bash
+npm ci && pre-commit run --all-files
+```
+
+ESLint + Prettier must pass. Never `--no-verify`.
+
+## Running quality checks
+
+```bash
+npm run lint    # ESLint
+npm test        # Vitest
+```

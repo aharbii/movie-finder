@@ -1,44 +1,36 @@
-# Movie Finder — Cursor Rules
+# Movie Finder — Cursor / Antigravity Rules
 
-You are working in the Movie Finder monorepo root.
-Primary reference: CLAUDE.md (loaded automatically by Claude Code, also valid for Cursor).
+This file is a legacy fallback. Cursor and Antigravity should load the MDC rules from `.cursor/rules/` instead — those files provide richer, file-type-aware context injection.
 
-## Architecture summary
+If your IDE supports MDC rules, the following files apply automatically:
+- `.cursor/rules/project.mdc` — always active (project overview, submodule map, non-negotiables)
+- `.cursor/rules/python.mdc` — active on `**/*.py` files (Python standards, backend patterns)
+- `.cursor/rules/angular.mdc` — active on `**/*.ts`, `**/*.html`, `**/*.scss` (Angular standards)
+- `.cursor/rules/architect.mdc` — active on architecture files + description-triggered
+- `.cursor/rules/developer.mdc` — description-triggered when implementing issues
+- `.cursor/rules/reviewer.mdc` — description-triggered when reviewing PRs
+- `.cursor/rules/debugger.mdc` — description-triggered when investigating bugs
+- `.cursor/rules/mentor.mdc` — description-triggered when explaining concepts
+- `.cursor/rules/pm.mdc` — description-triggered for GitHub issue management
 
-- `backend/` — FastAPI + LangGraph pipeline (Python 3.13, uv workspace)
-- `frontend/` — Angular 21 SPA (TypeScript 5.9)
-- `docs/` — MkDocs site + PlantUML diagrams + Structurizr C4 + ADRs
-- `infrastructure/` — Terraform IaC (Azure primary)
-- `mcp/` — Internal MCP servers (qdrant-explorer is the only implemented one)
+---
 
-## Development contract
+## Quick reference (fallback for IDEs that only read this file)
 
-All quality commands run inside Docker — never on the host.
+**Project:** Movie Finder — FastAPI + LangGraph 8-node AI pipeline + Angular 21 SPA + Qdrant Cloud + PostgreSQL 16.
 
-```
-make up              # start the full stack
-make down            # stop all containers
-make mkdocs          # docs site → http://localhost:8001
-make structurizr     # C4 diagrams → http://localhost:18080
-```
-
-## Cross-cutting rules
-
-- Python: mypy --strict, ruff (100 chars), no bare except, no print(), async all the way
-- TypeScript: no any, standalone components, signals not BehaviorSubject, strict mode
-- No secrets in code — detect-secrets pre-commit hook enforces this
-- Conventional Commits: type(scope): summary
-- Tests are required on every PR
-
-## CI/CD
-
-Per-repo pipelines: Lint + Test only (no image build).
-Root pipeline (Jenkins + GitHub Actions): Build images → Deploy staging → Production gate.
-
-## What NOT to do
-
-- Never `git add -A` — submodule state and secrets can be staged accidentally
-- Never `--no-verify` pre-commit
-- Never push directly to main
+**Non-negotiables:**
+- Never `git add -A` — submodule state and secrets can be staged
+- Never `--no-verify` on pre-commit
+- Never push to `main` directly
+- Never commit secrets
 - Never instantiate shared resources inside route handlers — use FastAPI `Depends()`
 - Never add `if provider == "openai":` branching — use the Strategy pattern
+- Conventional Commits: `type(scope): summary`
+- Disclose AI tool + model in every PR and review comment
+
+**Python:** Python 3.13, `mypy --strict`, `ruff` (100 chars), no bare `except:`, no `os.getenv()`, async all the way.
+
+**TypeScript:** Angular 21 standalone only, Signals for state, no `any`, strict mode, ESLint 9 + Prettier.
+
+**Personas:** use `@architect`, `@developer`, `@reviewer`, `@debugger`, `@mentor`, `@pm` in chat, or see `.cursor/rules/*.mdc` for the full definitions.

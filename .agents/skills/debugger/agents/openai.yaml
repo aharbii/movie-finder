@@ -1,0 +1,19 @@
+interface:
+  display_name: "Cross-Stack Debugger"
+  short_description: "Trace bugs across Angular, FastAPI, LangGraph, Qdrant, and PostgreSQL"
+  brand_color: "#DC2626"
+  default_prompt: "Investigate the following issue and produce a defect report:"
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: mcp
+      value: qdrant-evaluator
+      description: Query Qdrant, embed text, evaluate RAG quality
+      transport: stdio
+    - type: mcp
+      value: github
+      description: Fetch issues, PRs, commits, CI status
+      transport: stdio

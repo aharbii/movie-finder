@@ -1,0 +1,54 @@
+description = "Implement GitHub issue: /implement <issue-number>"
+prompt = """
+Implement GitHub issue #{{args}}.
+
+## Step 1 — Detect current repo
+```
+git remote get-url origin
+```
+Extract the repo slug (e.g., `aharbii/movie-finder-chain`). Use as REPO for gh commands.
+
+## Step 2 — Read the issue
+```
+gh issue view {{args}} --repo REPO
+```
+Find the **Agent Briefing** section. It specifies branch, files to read, acceptance criteria, and cross-cutting updates.
+
+**If there is no Agent Briefing: stop and ask the user to add one. Do not explore speculatively.**
+
+## Step 3 — Read only the files listed in the Agent Briefing
+No exploratory reads beyond what is listed. If a listed file imports something critical, that import is the only additional read allowed.
+
+## Step 4 — Create the branch
+```
+git checkout main && git pull
+git checkout -b [type]/[kebab-case-title]
+```
+Branch prefix from label: `enhancement`→`feature/`, `bug`→`fix/`, `technical-debt`→`chore/`, `docs`→`docs/`
+
+## Step 5 — Implement
+Follow acceptance criteria exactly. No extra features. No refactoring of unrelated code.
+
+Standards:
+- Python: type annotations, line ≤ 100, no bare `except:`, no `print()`, async all the way
+- TypeScript: no `any`, standalone components, signals not BehaviorSubject, strict mode
+- Both: no secrets in code, tests required, descriptive names
+
+## Step 6 — Quality checks
+```
+make check
+```
+Fix every finding before committing.
+
+## Step 7 — Commit and PR
+```
+git add [specific files]
+git commit -m "type(scope): summary
+
+Closes #{{args}}
+Co-Authored-By: Gemini CLI <noreply@google.com>"
+
+gh pr create --repo REPO --title "..." --body "..."
+```
+PR body must: link issue, disclose `AI-assisted: Gemini CLI`, follow `.github/PULL_REQUEST_TEMPLATE.md`.
+"""

@@ -1,0 +1,24 @@
+description = "Bump a submodule pointer after its PR merges: /bump-submodule <path>"
+prompt = """
+Bump the submodule pointer for: {{args}}
+
+## Steps
+```bash
+# 1. Verify the submodule PR is merged
+gh pr list --repo $(cat .gitmodules | grep -A2 "path = {{args}}" | grep url | awk '{print $3}' | sed 's/.*github.com[:/]//' | sed 's/.git//') --state merged | head -5
+
+# 2. Update the submodule to latest main
+cd {{args}} && git checkout main && git pull && cd ..
+
+# 3. Stage the pointer bump
+git add {{args}}
+
+# 4. Commit
+git commit -m "chore({{args}}): bump to latest main"
+```
+
+## Important
+- Never `git add -A` — only add the specific submodule path
+- If the parent branch has other open work, check whether to stack or open a separate PR
+- After bumping: open a PR in aharbii/movie-finder and link the original submodule issue
+"""

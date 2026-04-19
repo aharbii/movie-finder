@@ -46,17 +46,6 @@
         "KAGGLE_API_TOKEN": "${env:KAGGLE_API_TOKEN}"
       }
     },
-    "langsmith": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "langsmith-mcp"
-      ],
-      "env": {
-        "LANGSMITH_API_KEY": "${env:LANGSMITH_API_KEY}",
-        "LANGSMITH_PROJECT": "${env:LANGSMITH_PROJECT}"
-      }
-    },
     "azure": {
       "type": "stdio",
       "command": "npx",

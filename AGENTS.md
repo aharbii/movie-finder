@@ -68,13 +68,34 @@ gh issue list --repo aharbii/movie-finder --state open
 | **GitHub Copilot**                       | `.github/copilot-instructions.md` | Per-repo inline suggestions                       |
 | **JetBrains AI (Junie)**                 | `.junie/guidelines.md`            | Per-repo file for JetBrains IDE AI assistant      |
 
-### Prompts for Codex CLI
+### Skills for Codex CLI
 
-Copy-paste prompts are in `ai-context/prompts/` (available in each submodule too):
+Skills are located in `.agents/skills/` and activate automatically based on task context.
+Each skill is a subdirectory with a `SKILL.md` file.
 
-- `ai-context/prompts/implement.md` — step-by-step implementation workflow
-- `ai-context/prompts/review-pr.md` — PR review workflow (pipe `gh pr diff` into it)
-- `ai-context/prompts/research.md` — project context block for research sessions
+| Skill      | Directory                         | Activates when                                      |
+|------------|-----------------------------------|-----------------------------------------------------|
+| architect  | `.agents/skills/architect/`       | System design, ADRs, PlantUML, API contracts        |
+| developer  | `.agents/skills/developer/`       | Implementing a GitHub issue, writing code           |
+| reviewer   | `.agents/skills/reviewer/`        | Reviewing a PR, validating code quality             |
+| debugger   | `.agents/skills/debugger/`        | Investigating bugs, cross-stack tracing             |
+| mentor     | `.agents/skills/mentor/`          | Explaining concepts using project code              |
+| pm         | `.agents/skills/pm/`              | GitHub issue management, sprint planning            |
+| devops     | `.agents/skills/devops/`          | CI/CD, Docker, IaC, AI tooling maintenance          |
+
+### MCP configuration
+
+Codex MCP servers are configured in `.codex/config.toml` (project-scoped).
+All required env vars must be set in your shell before running Codex (load from `.env`).
+
+Available MCP servers: `qdrant-evaluator`, `github`, `postgres`, `kaggle`, `langsmith`, `azure`.
+
+### Prompts for Codex CLI (legacy — prefer skills)
+
+Copy-paste prompts in `ai-context/prompts/` (available in each submodule):
+- `ai-context/prompts/implement.md` — implementation workflow
+- `ai-context/prompts/review-pr.md` — PR review workflow
+- `ai-context/prompts/research.md` — project context block
 
 ### Agent Briefing pattern
 
@@ -84,7 +105,8 @@ The briefing lists exact files to read — without it, do not explore the codeba
 
 **Maintenance rule:** any structural change must be mirrored across `CLAUDE.md`, `GEMINI.md`,
 `AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`, `.cursorrules`,
-`.claude/commands/`, and `ai-context/prompts/` in every affected repo.
+`.claude/commands/`, `.gemini/skills/`, `.agents/skills/`, `.cursor/rules/`, and `ai-context/prompts/`
+in every affected repo. The DevOps persona (`/devops`) owns this sync.
 
 ---
 

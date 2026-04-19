@@ -1,0 +1,15 @@
+interface:
+  display_name: "Project Manager"
+  short_description: "Organise backlog, create Epics, plan sprints via GitHub"
+  brand_color: "#7C3AED"
+  default_prompt: "Manage GitHub issues for Movie Finder:"
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: mcp
+      value: github
+      description: Create and manage issues, PRs, labels, and milestones
+      transport: stdio

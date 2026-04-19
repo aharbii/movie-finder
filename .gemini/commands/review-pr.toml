@@ -1,0 +1,36 @@
+description = "Review a pull request: /review-pr <pr-number>"
+prompt = """
+Review pull request #{{args}} as a senior engineer.
+
+## Step 1 — Get the diff
+```
+gh pr diff {{args}} --repo $(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/\.git//')
+```
+
+## Step 2 — Read the PR description
+```
+gh pr view {{args}} --repo REPO
+```
+
+## Step 3 — Review against these criteria
+
+**Blocking issues (must fix before merge):**
+- Security vulnerabilities (injection, auth bypass, secret exposure)
+- Breaking changes without ADR or migration path
+- Missing tests for new behaviour
+- Type safety violations (`type: ignore`, `any`, bare `except:`)
+- Blocking design pattern violations (see CLAUDE.md patterns)
+
+**Non-blocking issues (suggest, do not block):**
+- Style improvements within standards
+- Performance suggestions
+- Documentation improvements
+- Test coverage gaps for edge cases
+
+## Step 4 — Verdict
+State clearly: **APPROVE** / **REQUEST CHANGES** / **COMMENT ONLY**
+
+For REQUEST CHANGES: list each blocking issue with file:line and suggested fix.
+
+Disclose: `AI-assisted review: Gemini CLI`
+"""

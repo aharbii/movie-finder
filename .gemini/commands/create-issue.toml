@@ -1,0 +1,34 @@
+description = "Create a GitHub issue with Agent Briefing: /create-issue <description>"
+prompt = """
+Create a GitHub issue for: {{args}}
+
+## Step 1 — Check for duplicates
+```
+gh issue list --repo aharbii/movie-finder --state open
+```
+Do not create if the issue already exists (see known issues in CLAUDE.md).
+
+## Step 2 — Read the issue template
+```
+gh api repos/aharbii/movie-finder/contents/.github/ISSUE_TEMPLATE --jq '.[].name'
+```
+Read the matching template and one recent issue of the same type for style reference.
+
+## Step 3 — Create parent issue in aharbii/movie-finder
+Use the template structure. Include all sections. Do not improvise the format.
+
+## Step 4 — Create child issues only in repos that will change
+Each child issue must use that repo's `linked_task.yml` template.
+
+## Step 5 — Add Agent Briefing to the parent issue
+Template: `ai-context/issue-agent-briefing-template.md`
+
+The Agent Briefing must list:
+- Workspace to open
+- Branch name
+- Files to read first (exact paths, no exploration)
+- Files to create/modify
+- Cross-cutting updates required
+- Whether this PR fully closes or partially addresses the issue
+- Definition of done
+"""

@@ -1,0 +1,56 @@
+---
+description: Python coding standards and backend design patterns — auto-loads when editing Python files.
+globs: ["**/*.py"]
+alwaysApply: false
+---
+
+# Python Standards — Movie Finder Backend
+
+## Toolchain
+
+- Python 3.13, `uv` workspace rooted at `backend/`
+- Linting: `ruff` (rules: E, F, I, N, UP, B, C4, SIM) — line length 100
+- Types: `mypy --strict` — must pass on every PR
+- Tests: `pytest --asyncio-mode=auto` — coverage must not regress
+- Format on save: Ruff (configured in `.vscode/settings.json`)
+
+## Hard rules
+
+- No bare `except:` — always catch specific exception types
+- No `os.getenv()` scattered in code — load env vars once in `config.py` via Pydantic `BaseSettings`
+- No `print()` in production code — use structured logging
+- No `type: ignore` without an inline comment explaining why
+- No mutable default arguments — use `None` + `if x is None: x = []`
+- No blocking I/O in an async context — async all the way
+- Docstrings required on all public classes and functions (Google style)
+- Import order: stdlib → third-party → local (ruff `I` rules enforce this)
+
+## Backend design patterns — follow these, do not drift
+
+| Pattern                  | Where                   | Rule                                                                          |
+|--------------------------|-------------------------|-------------------------------------------------------------------------------|
+| **State machine**        | `chain/` (LangGraph)    | New behaviour = new node or edge — never branch inside an existing node       |
+| **Strategy**             | Embedding/LLM providers | New provider = new class implementing the interface — no `if provider ==` branching |
+| **Dependency injection** | `app/` routes           | `Depends()` for db pool, auth, config, graph — never instantiate inside handlers |
+| **Repository**           | Database layer          | Data access in repository classes — no raw SQL in route handlers              |
+| **Factory**              | `chain/graph.py`        | Node construction centralised in `graph.py` — nodes are pure functions        |
+| **Adapter**              | `imdbapi/` client       | Client maps raw HTTP → internal domain types — callers never see raw responses |
+| **Configuration object** | All submodules          | All env vars loaded once via `config.py` — never `os.getenv()` in business logic |
+
+## Pre-commit (run inside Docker)
+
+```bash
+make pre-commit          # from backend/ — runs ruff, mypy, detect-secrets
+```
+
+Never `--no-verify`. Secrets false positive → `# pragma: allowlist secret` + `detect-secrets scan > .secrets.baseline`.
+
+## Running quality checks
+
+```bash
+make lint         # ruff check
+make format       # ruff format
+make typecheck    # mypy --strict
+make test         # pytest --asyncio-mode=auto
+make test-coverage
+```

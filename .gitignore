@@ -68,12 +68,9 @@ docs/architecture/workspace.json
 # This entry guards against accidental PNG commits at the root level.
 docs/architecture/plantuml/*.png
 
-.gemini/
 gha-creds-*.json
 
 # ── Stray artefacts ────────────────────────────────────────────────────────────
 package-lock.json
 mcp-plan.md
-.mcp.json.md
 ai-audit.md
-ai-setup-audit-and-plan.md

@@ -1,0 +1,71 @@
+---
+description: Movie Finder project overview — always active for every Cursor and Antigravity session.
+alwaysApply: true
+---
+
+# Movie Finder — Project Context
+
+Full-stack AI app: user describes a half-remembered film → semantic search (Qdrant) → IMDb enrichment → streamed Q&A chat via SSE.
+
+## Submodule map
+
+| Open this workspace      | Repo                            | Role                                     |
+|--------------------------|---------------------------------|------------------------------------------|
+| root (`movie-finder/`)   | `aharbii/movie-finder`          | Orchestrator — all cross-repo issues     |
+| `backend/`               | `aharbii/movie-finder-backend`  | FastAPI + uv workspace root              |
+| `backend/chain/`         | `aharbii/movie-finder-chain`    | LangGraph 8-node AI pipeline             |
+| `frontend/`              | `aharbii/movie-finder-frontend` | Angular 21 SPA                           |
+| `docs/`                  | `aharbii/movie-finder-docs`     | MkDocs + PlantUML + Structurizr + ADRs   |
+| `infrastructure/`        | `aharbii/movie-finder-infrastructure` | Azure IaC                          |
+
+## Stack at a glance
+
+- **Backend:** Python 3.13, FastAPI 0.115+, asyncpg, LangGraph 0.2+, LangChain 0.3+
+- **AI models:** Claude Haiku (classify), Claude Sonnet (reason/Q&A)
+- **Embeddings:** OpenAI `text-embedding-3-large` (3072-dim)
+- **Vector store:** Qdrant Cloud — always external, no local container ever
+- **Frontend:** Angular 21, TypeScript 5.9, Signals, SSE (`EventSource`)
+- **DB:** PostgreSQL 16 via asyncpg — no Alembic yet (issue #3)
+- **CI/CD:** Jenkins → Azure Container Registry → Azure Container Apps
+
+## Key commands
+
+```bash
+make up              # start full stack in Docker
+make down            # stop all containers
+make mkdocs          # docs site → http://localhost:8001
+make structurizr     # C4 diagrams → http://localhost:18080
+gh issue list --repo aharbii/movie-finder --state open   # check open work
+```
+
+## Non-negotiables
+
+- Never `git add -A` — submodule gitlinks and secrets can be staged accidentally
+- Never `--no-verify` on pre-commit hooks
+- Never push directly to `main` — PRs required, 1 approval
+- Never commit secrets — `detect-secrets` pre-commit hook enforces this
+- Never instantiate shared resources inside route handlers — use FastAPI `Depends()`
+- Conventional Commits: `type(scope): summary` — types: feat · fix · chore · docs · test · refactor · perf
+- Disclose AI tool + model in every PR description and review comment
+
+## Branching
+
+```
+main  ← always deployable, protected
+  └── feature/<kebab-case>
+  └── fix/<kebab-case>
+  └── chore/<kebab-case>   ← submodule pointer bumps go here
+  └── docs/<kebab-case>
+  └── hotfix/<kebab-case>
+```
+
+## Personas available in this project
+
+| Persona      | Cursor                  | Claude Code    | Gemini CLI                   | Copilot Chat                        |
+|--------------|-------------------------|----------------|------------------------------|-------------------------------------|
+| Architect    | auto on arch files      | `/architect`   | `@architect`                 | `#file:.github/prompts/architect.md`|
+| Developer    | `@developer` in chat    | `/implement`   | `@developer`                 | `#file:.github/prompts/developer.md`|
+| Reviewer     | `@reviewer` in chat     | `/review-pr`   | `@reviewer`                  | `#file:.github/prompts/reviewer.md` |
+| Debugger     | `@debugger` in chat     | `/debug`       | `@debugger`                  | `#file:.github/prompts/debugger.md` |
+| Mentor       | `@mentor` in chat       | `/mentor`      | `@mentor`                    | `#file:.github/prompts/mentor.md`   |
+| PM           | `@pm` in chat           | `/pm`          | `@pm`                        | `#file:.github/prompts/pm.md`       |
