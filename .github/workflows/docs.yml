@@ -104,6 +104,15 @@ jobs:
       - name: Install documentation dependencies
         run: pip install -r requirements-docs.txt
 
+      # ── 3b. Install PlantUML and Graphviz ───────────────────────────────────
+      # PlantUML renders architecture diagrams to PNG at build time.
+      # PNGs are gitignored — generated here so MkDocs can embed them.
+      - name: Install PlantUML and Graphviz
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            plantuml graphviz default-jre-headless
+
       # ── 4. Populate generated pages from submodules ─────────────────────────
       #
       # Files marked "generated" in mkdocs.yml are sourced from submodule READMEs.
@@ -230,6 +239,21 @@ jobs:
 
           echo "Generated pages ready:"
           ls -la docs/onboarding.md docs/contributing/ docs/services/
+
+      # ── 4b. Render PlantUML diagrams ─────────────────────────────────────────
+      # Source .puml files are committed in docs/architecture/plantuml/.
+      # PNGs are gitignored and must be generated before mkdocs build.
+      - name: Render PlantUML diagrams
+        run: |
+          set -euo pipefail
+          PLANTUML_DIR="docs/architecture/plantuml"
+          mapfile -t puml_files < <(find "$PLANTUML_DIR" -name "*.puml" -type f | sort)
+          echo "Found ${#puml_files[@]} PlantUML source files"
+          if [ "${#puml_files[@]}" -gt 0 ]; then
+            plantuml -png -DPLANTUML_LIMIT_SIZE=8192 "${puml_files[@]}"
+            png_count=$(find "$PLANTUML_DIR" -name "*.png" | wc -l | tr -d ' ')
+            echo "Rendered $png_count PNG files"
+          fi
 
       # ── 5. Build static site ─────────────────────────────────────────────────
       - name: Build MkDocs site

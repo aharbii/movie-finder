@@ -31,7 +31,7 @@ required_files=(
   "$REPO_ROOT/frontend/README.md"
   "$REPO_ROOT/backend/chain/README.md"
   "$REPO_ROOT/backend/chain/imdbapi/README.md"
-  "$REPO_ROOT/backend/rag_ingestion/README.md"
+  "$REPO_ROOT/rag/README.md"
   "$REPO_ROOT/backend/CONTRIBUTING.md"
   "$REPO_ROOT/frontend/CONTRIBUTING.md"
 )
@@ -71,7 +71,7 @@ rewrite_links "$DOCS_DIR/onboarding.md" \
   's|](frontend/README\.md)|](services/frontend.md)|g' \
   's|](backend/chain/README\.md)|](services/chain.md)|g' \
   's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
-  's|](backend/rag_ingestion/README\.md)|](services/rag-ingestion.md)|g' \
+  's|](rag/README\.md)|](services/rag-ingestion.md)|g' \
   's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
   's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
   's|](docs/devops-setup\.md\b|](devops/setup.md|g' \
@@ -90,7 +90,7 @@ rewrite_links "$DOCS_DIR/contributing/index.md" \
   's|](frontend/README\.md)|](../services/frontend.md)|g' \
   's|](backend/chain/README\.md)|](../services/chain.md)|g' \
   's|](backend/chain/imdbapi/README\.md)|](../services/imdbapi.md)|g' \
-  's|](backend/rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+  's|](rag/README\.md)|](../services/rag-ingestion.md)|g' \
   's|](docs/devops-setup\.md\b|](../devops/setup.md|g' \
   's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
   's|](docs/architecture/|](../architecture/|g' \
@@ -144,8 +144,8 @@ rewrite_links "$DOCS_DIR/services/imdbapi.md" \
   's|](\.\.\/rag_ingestion/README\.md)|](rag-ingestion.md)|g'
 
 # ── Copy and fix: services/rag-ingestion.md ──────────────────────────────────
-echo "Copying backend/rag_ingestion/README.md..."
-cp "$REPO_ROOT/backend/rag_ingestion/README.md" "$DOCS_DIR/services/rag-ingestion.md"
+echo "Copying rag/README.md..."
+cp "$REPO_ROOT/rag/README.md" "$DOCS_DIR/services/rag-ingestion.md"
 rewrite_links "$DOCS_DIR/services/rag-ingestion.md" \
   's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
   's|](\.\.\/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
@@ -185,10 +185,15 @@ rewrite_links "$DOCS_DIR/contributing/frontend.md" \
 PLANTUML_DIR="$DOCS_DIR/architecture/plantuml"
 
 if command -v plantuml &>/dev/null; then
-  echo "Rendering PlantUML diagrams..."
-  plantuml -png -DPLANTUML_LIMIT_SIZE=8192 "$PLANTUML_DIR"/*.puml
-  png_count=$(find "$PLANTUML_DIR" -name "*.png" | wc -l | tr -d ' ')
-  echo "  → $png_count PNG files written to $PLANTUML_DIR"
+  echo "Rendering PlantUML diagrams (recursive)..."
+  mapfile -t puml_files < <(find "$PLANTUML_DIR" -name "*.puml" -type f | sort)
+  if [ "${#puml_files[@]}" -gt 0 ]; then
+    plantuml -png -DPLANTUML_LIMIT_SIZE=8192 "${puml_files[@]}"
+    png_count=$(find "$PLANTUML_DIR" -name "*.png" | wc -l | tr -d ' ')
+    echo "  → $png_count PNG files written under $PLANTUML_DIR"
+  else
+    echo "WARNING: No .puml files found under $PLANTUML_DIR"
+  fi
 else
   echo "WARNING: plantuml not found — architecture diagrams will not render."
   echo "         macOS:  brew install plantuml graphviz"
