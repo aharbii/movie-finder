@@ -14,7 +14,7 @@ IMDb enrichment → streamed Q&A. Multi-repo structure using Git submodules.
 | `backend/app/`             | (nested in backend)                   | FastAPI routes, auth, SSE     |
 | `backend/chain/`           | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline  |
 | `backend/chain/imdbapi/`   | `aharbii/imdbapi-client`              | Async IMDb REST client        |
-| `backend/rag_ingestion/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
+| `rag/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
 | `frontend/`                | `aharbii/movie-finder-frontend`       | Angular 21 SPA                |
 | `docs/`                    | `aharbii/movie-finder-docs`           | MkDocs documentation site     |
 | `infrastructure/`          | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning      |

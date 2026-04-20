@@ -48,7 +48,7 @@ The **backend** submodule itself integrates four further sub-projects as nested 
 | app           | `backend/app/`           | FastAPI routers, auth, session store      |
 | chain         | `backend/chain/`         | LangGraph multi-agent pipeline            |
 | imdbapi       | `backend/chain/imdbapi/` | Async IMDb REST API client                |
-| rag_ingestion | `backend/rag_ingestion/` | Kaggle dataset → embed → Qdrant ingestion |
+| rag_ingestion | `rag/` | Kaggle dataset → embed → Qdrant ingestion |
 
 ---
 
@@ -256,5 +256,5 @@ git pull && git submodule update --init --recursive
 | Frontend team      | See `frontend/CONTRIBUTING.md`                                                                       |
 | AI / Chain team    | See `backend/chain/CONTRIBUTING.md`                                                                  |
 | IMDb API team      | See `backend/chain/imdbapi/CONTRIBUTING.md`                                                          |
-| RAG / Data team    | See `backend/rag_ingestion/CONTRIBUTING.md`                                                          |
+| RAG / Data team    | See `rag/CONTRIBUTING.md`                                                          |
 | DevOps / Platform  | See [`docs/devops/setup.md`](https://github.com/aharbii/movie-finder-docs/blob/main/devops/setup.md) |

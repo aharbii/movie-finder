@@ -104,6 +104,15 @@ jobs:
       - name: Install documentation dependencies
         run: pip install -r requirements-docs.txt
 
+      # ── 3b. Install PlantUML and Graphviz ───────────────────────────────────
+      # PlantUML renders architecture diagrams to PNG at build time.
+      # PNGs are gitignored — generated here so MkDocs can embed them.
+      - name: Install PlantUML and Graphviz
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            plantuml graphviz default-jre-headless
+
       # ── 4. Populate generated pages from submodules ─────────────────────────
       #
       # Files marked "generated" in mkdocs.yml are sourced from submodule READMEs.
@@ -124,12 +133,15 @@ jobs:
             -e 's|](backend/chain/README\.md)|](services/chain.md)|g' \
             -e 's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
             -e 's|](rag/README\.md)|](services/rag-ingestion.md)|g' \
+            -e 's|](CONTRIBUTING\.md#|](contributing/index.md#|g' \
             -e 's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
             -e 's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
             -e 's|](docs/devops-setup\.md\b|](devops/setup.md|g' \
-            -e 's|](docs/devops/setup\.md)|](devops/setup.md)|g' \
+            -e 's|](docs/devops/setup\.md|](devops/setup.md|g' \
             -e 's|](docs/architecture/|](architecture/|g' \
             -e 's|](docs/api/|](api/|g' \
+            -e 's|#6-ports-and-urls-at-a-glance|#7-ports-and-urls-at-a-glance|g' \
+            -e 's|#7-run-the-full-stack-with-docker|#8-run-the-full-stack-with-docker|g' \
             docs/onboarding.md
 
           # ── contributing/index.md ─────────────────────────────────────────────
@@ -154,13 +166,21 @@ jobs:
           cp backend/README.md docs/services/backend.md
           sed -i \
             -e 's|](chain/README\.md)|](chain.md)|g' \
+            -e 's|](chain/imdbapi/README\.md)|](imdbapi.md)|g' \
+            -e 's|](chain/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](chain/imdbapi/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
             -e 's|](imdbapi/README\.md)|](imdbapi.md)|g' \
             -e 's|](rag_ingestion/README\.md)|](rag-ingestion.md)|g' \
+            -e 's|](rag_ingestion/CONTRIBUTING\.md)|](../contributing/rag-ingestion.md)|g' \
             -e 's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+            -e 's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
+            -e 's|](app/README\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/app/README.md)|g' \
+            -e 's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g' \
+            -e 's|](\.\./infrastructure/docs/qdrant-secret-model\.md)|](https://github.com/aharbii/movie-finder-infrastructure/blob/main/docs/qdrant-secret-model.md)|g' \
             -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](\.\./docs/architecture/|](../architecture/|g' \
             -e 's|](docs/architecture/|](../architecture/|g' \
             docs/services/backend.md
@@ -171,9 +191,10 @@ jobs:
             -e 's|](\.\./CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
             -e 's|](CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
             -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](\.\./docs/architecture/|](../architecture/|g' \
             -e 's|](\.\./README\.md)|](../index.md)|g' \
+            -e 's|](docker-entrypoint\.sh)|](https://github.com/aharbii/movie-finder-frontend/blob/main/docker-entrypoint.sh)|g' \
             docs/services/frontend.md
 
           # ── services/chain.md ─────────────────────────────────────────────────
@@ -207,13 +228,15 @@ jobs:
           cp backend/CONTRIBUTING.md docs/contributing/backend.md
           sed -i \
             -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](\.\./README\.md)|](../services/backend.md)|g' \
             -e 's|](chain/README\.md)|](../services/chain.md)|g' \
             -e 's|](imdbapi/README\.md)|](../services/imdbapi.md)|g' \
             -e 's|](rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+            -e 's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
+            -e 's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g' \
             docs/contributing/backend.md
 
           # ── contributing/frontend.md ──────────────────────────────────────────
@@ -222,14 +245,30 @@ jobs:
             -e 's|](\.\./CONTRIBUTING\.md)|](index.md)|g' \
             -e 's|](CONTRIBUTING\.md)|](index.md)|g' \
             -e 's|](\.\./docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](\.\./docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](\.\./docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](docs/devops-setup\.md|](../devops/setup.md|g' \
-            -e 's|](docs/devops/setup\.md)|](../devops/setup.md)|g' \
+            -e 's|](docs/devops/setup\.md|](../devops/setup.md|g' \
             -e 's|](\.\./README\.md)|](../services/frontend.md)|g' \
+            -e 's|setup\.md#9-jenkins--credentials|setup.md#9-jenkins-credentials|g' \
             docs/contributing/frontend.md
 
           echo "Generated pages ready:"
           ls -la docs/onboarding.md docs/contributing/ docs/services/
+
+      # ── 4b. Render PlantUML diagrams ─────────────────────────────────────────
+      # Source .puml files are committed in docs/architecture/plantuml/.
+      # PNGs are gitignored and must be generated before mkdocs build.
+      - name: Render PlantUML diagrams
+        run: |
+          set -euo pipefail
+          PLANTUML_DIR="docs/architecture/plantuml"
+          mapfile -t puml_files < <(find "$PLANTUML_DIR" -name "*.puml" -type f | sort)
+          echo "Found ${#puml_files[@]} PlantUML source files"
+          if [ "${#puml_files[@]}" -gt 0 ]; then
+            plantuml -png -DPLANTUML_LIMIT_SIZE=8192 "${puml_files[@]}"
+            png_count=$(find "$PLANTUML_DIR" -name "*.png" | wc -l | tr -d ' ')
+            echo "Rendered $png_count PNG files"
+          fi
 
       # ── 5. Build static site ─────────────────────────────────────────────────
       - name: Build MkDocs site

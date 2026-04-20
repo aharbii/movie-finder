@@ -39,9 +39,9 @@
       "type": "debugpy",
       "request": "launch",
       "module": "src.main",
-      "envFile": "${workspaceFolder}/backend/rag_ingestion/.env",
-      "python": "${workspaceFolder}/backend/rag_ingestion/.venv/bin/python",
-      "cwd": "${workspaceFolder}/backend/rag_ingestion",
+      "envFile": "${workspaceFolder}/rag/.env",
+      "python": "${workspaceFolder}/rag/.venv/bin/python",
+      "cwd": "${workspaceFolder}/rag",
       "console": "integratedTerminal"
     },
 
@@ -74,9 +74,9 @@
       "request": "launch",
       "module": "pytest",
       "args": ["tests/", "-v"],
-      "envFile": "${workspaceFolder}/backend/rag_ingestion/.env",
-      "python": "${workspaceFolder}/backend/rag_ingestion/.venv/bin/python",
-      "cwd": "${workspaceFolder}/backend/rag_ingestion"
+      "envFile": "${workspaceFolder}/rag/.env",
+      "python": "${workspaceFolder}/rag/.venv/bin/python",
+      "cwd": "${workspaceFolder}/rag"
     },
 
     // ══════════════════════════════════════════════════════════════════════

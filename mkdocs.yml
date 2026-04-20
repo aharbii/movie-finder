@@ -22,8 +22,11 @@ dev_addr: 127.0.0.1:8001
 # ─────────────────────────────────────────────────────────────
 exclude_docs: |
   README.md
+  AGENTS.md
+  CLAUDE.md
+  GEMINI.md
   architecture/architecture.mdj
-  architecture/plantuml/*.puml
+  architecture/plantuml/**/*.puml
   architecture/workspace.dsl
   architecture/workspace.json
   architecture/.structurizr/
@@ -133,8 +136,20 @@ nav:
 
   - Architecture:
       - Overview: architecture/index.md
-      - PlantUML Diagrams:
-          - All Diagrams: architecture/plantuml/index.md
+      - UML Diagrams:
+          - Diagram Index: architecture/plantuml/index.md
+          - Context & Deployment: architecture/plantuml/00-context/index.md
+          - Use Cases: architecture/plantuml/01-use-cases/index.md
+          - Domain Model: architecture/plantuml/02-domain/index.md
+          - Class Diagrams: architecture/plantuml/03-class/index.md
+          - Activity Diagrams: architecture/plantuml/04-activity/index.md
+          - State Diagrams: architecture/plantuml/05-state/index.md
+          - Component Diagrams: architecture/plantuml/06-component/index.md
+          - Sequence Diagrams: architecture/plantuml/07-sequence/index.md
+          - Database Design: architecture/plantuml/08-database/index.md
+      - Requirements:
+          - System Requirements: architecture/requirements/01-system-requirements.md
+          - Pipeline Requirements: architecture/requirements/02-pipeline-requirements.md
       - Decisions (ADRs):
           - Register: architecture/decisions/0000-register.md
           - 0001 Initial Architecture: architecture/decisions/0001-initial-architecture.md
@@ -143,6 +158,8 @@ nav:
           - 0004 Standalone MCP Repositories: architecture/decisions/0004-standalone-mcp-repositories.md
           - 0005 GitHub Actions Mirror and Root Pipeline: architecture/decisions/0005-github-actions-mirror-and-root-pipeline.md
           - 0006 Terraform IaC: architecture/decisions/0006-terraform-iac.md
+          - 0007 Persistent LangGraph Checkpointing: architecture/decisions/0007-persistent-langgraph-checkpointing.md
+          - 0008 LLM & Embedding Provider Factory: architecture/decisions/0008-llm-and-embedding-provider-factory.md
 
   - Services:
       - Service Map: services/index.md
