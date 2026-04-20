@@ -20,7 +20,7 @@ search, enriches it with live IMDb metadata, and answers follow-up questions via
 | `backend/app/`             | (nested in backend)                   | FastAPI application layer     |
 | `backend/chain/`           | `aharbii/movie-finder-chain`          | LangGraph 8-node AI pipeline  |
 | `backend/chain/imdbapi/`   | `aharbii/imdbapi-client`              | Async IMDb REST client        |
-| `backend/rag_ingestion/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
+| `rag/`   | `aharbii/movie-finder-rag`            | Offline embedding ingestion   |
 | `frontend/`                | `aharbii/movie-finder-frontend`       | Angular 21 SPA                |
 | `docs/`                    | `aharbii/movie-finder-docs`           | MkDocs documentation site     |
 | `infrastructure/`          | `aharbii/movie-finder-infrastructure` | IaC / Azure provisioning      |
@@ -92,7 +92,7 @@ The briefing lists exact files to read — without it, do not explore the codeba
 
 - `backend`, `frontend`, `docs`, and `infrastructure` are gitlinks in this repo. Parent
   workflow/path filters use the gitlink path itself (for example `docs`), not `docs/**`.
-- `backend/chain`, `backend/chain/imdbapi`, and `backend/rag_ingestion` are gitlinks in
+- `backend/chain`, `backend/chain/imdbapi`, and `rag` are gitlinks in
   `aharbii/movie-finder-backend` and follow the same rule there.
 - Root-only changes do not need child submodule issues. Create child issues only for repos whose
   files, docs, or gitlink pointers will change.
@@ -135,7 +135,7 @@ opening a parent workspace gives you all capabilities of its children.
 | Root (`movie-finder/`)   | All: backend (app/chain/imdbapi/rag) + frontend + docs + Docker full stack |
 | `backend/`               | All backend packages: app + chain + imdbapi + rag_ingestion                |
 | `backend/chain/`         | chain only                                                                 |
-| `backend/rag_ingestion/` | rag_ingestion only (standalone uv)                                         |
+| `rag/` | rag_ingestion only (standalone uv)                                         |
 | `backend/chain/imdbapi/` | imdbapi only                                                               |
 | `frontend/`              | Angular SPA only                                                           |
 | `docs/`                  | PlantUML + Markdown editing                                                |

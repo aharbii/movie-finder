@@ -63,13 +63,13 @@
     },
 
     // ══════════════════════════════════════════════════════════════════════
-    // BACKEND — RAG ingestion (backend/rag_ingestion/ — standalone uv)
+    // BACKEND — RAG ingestion (rag/ — standalone uv)
     // ══════════════════════════════════════════════════════════════════════
     {
       "label": "rag: lint",
       "type": "shell",
       "command": "uv run ruff check . && uv run mypy .",
-      "options": { "cwd": "${workspaceFolder}/backend/rag_ingestion" },
+      "options": { "cwd": "${workspaceFolder}/rag" },
       "group": "build",
       "presentation": { "reveal": "always", "panel": "shared" }
     },
@@ -77,7 +77,7 @@
       "label": "rag: test",
       "type": "shell",
       "command": "uv run pytest tests/ -v",
-      "options": { "cwd": "${workspaceFolder}/backend/rag_ingestion" },
+      "options": { "cwd": "${workspaceFolder}/rag" },
       "group": "test",
       "presentation": { "reveal": "always", "panel": "shared" }
     },
