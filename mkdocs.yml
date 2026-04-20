@@ -22,6 +22,9 @@ dev_addr: 127.0.0.1:8001
 # ─────────────────────────────────────────────────────────────
 exclude_docs: |
   README.md
+  AGENTS.md
+  CLAUDE.md
+  GEMINI.md
   architecture/architecture.mdj
   architecture/plantuml/**/*.puml
   architecture/workspace.dsl
@@ -144,6 +147,9 @@ nav:
           - Component Diagrams: architecture/plantuml/06-component/index.md
           - Sequence Diagrams: architecture/plantuml/07-sequence/index.md
           - Database Design: architecture/plantuml/08-database/index.md
+      - Requirements:
+          - System Requirements: architecture/requirements/01-system-requirements.md
+          - Pipeline Requirements: architecture/requirements/02-pipeline-requirements.md
       - Decisions (ADRs):
           - Register: architecture/decisions/0000-register.md
           - 0001 Initial Architecture: architecture/decisions/0001-initial-architecture.md

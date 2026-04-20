@@ -72,12 +72,15 @@ rewrite_links "$DOCS_DIR/onboarding.md" \
   's|](backend/chain/README\.md)|](services/chain.md)|g' \
   's|](backend/chain/imdbapi/README\.md)|](services/imdbapi.md)|g' \
   's|](rag/README\.md)|](services/rag-ingestion.md)|g' \
+  's|](CONTRIBUTING\.md#|](contributing/index.md#|g' \
   's|](CONTRIBUTING\.md)|](contributing/index.md)|g' \
   's|](\.github/PULL_REQUEST_TEMPLATE\.md)|](https://github.com/aharbii/movie-finder/blob/main/.github/PULL_REQUEST_TEMPLATE.md)|g' \
   's|](docs/devops-setup\.md\b|](devops/setup.md|g' \
-  's|](docs/devops/setup\.md)|](devops/setup.md)|g' \
+  's|](docs/devops/setup\.md|](devops/setup.md|g' \
   's|](docs/architecture/|](architecture/|g' \
-  's|](docs/api/|](api/|g'
+  's|](docs/api/|](api/|g' \
+  's|#6-ports-and-urls-at-a-glance|#7-ports-and-urls-at-a-glance|g' \
+  's|#7-run-the-full-stack-with-docker|#8-run-the-full-stack-with-docker|g'
 
 # ── Copy and fix: contributing/index.md ──────────────────────────────────────
 echo "Copying CONTRIBUTING.md..."
@@ -102,13 +105,21 @@ echo "Copying backend/README.md..."
 cp "$REPO_ROOT/backend/README.md" "$DOCS_DIR/services/backend.md"
 rewrite_links "$DOCS_DIR/services/backend.md" \
   's|](chain/README\.md)|](chain.md)|g' \
+  's|](chain/imdbapi/README\.md)|](imdbapi.md)|g' \
+  's|](chain/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+  's|](chain/imdbapi/CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
   's|](imdbapi/README\.md)|](imdbapi.md)|g' \
   's|](rag_ingestion/README\.md)|](rag-ingestion.md)|g' \
+  's|](rag_ingestion/CONTRIBUTING\.md)|](../contributing/rag-ingestion.md)|g' \
   's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
+  's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
+  's|](app/README\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/app/README.md)|g' \
+  's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g' \
+  's|](\.\./infrastructure/docs/qdrant-secret-model\.md)|](https://github.com/aharbii/movie-finder-infrastructure/blob/main/docs/qdrant-secret-model.md)|g' \
   's|](\.\.\/docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](\.\.\/docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](\.\.\/docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](docs/devops-setup\.md|](../devops/setup.md|g' \
-  's|](docs/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](docs/devops\/setup\.md|](../devops/setup.md|g' \
   's|](\.\.\/docs\/architecture/|](../architecture/|g' \
   's|](docs/architecture/|](../architecture/|g'
 
@@ -119,9 +130,10 @@ rewrite_links "$DOCS_DIR/services/frontend.md" \
   's|](\.\.\/CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
   's|](CONTRIBUTING\.md)|](../contributing/frontend.md)|g' \
   's|](\.\.\/docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](\.\.\/docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](\.\.\/docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](\.\.\/docs\/architecture/|](../architecture/|g' \
-  's|](\.\.\/README\.md)|](../index.md)|g'
+  's|](\.\.\/README\.md)|](../index.md)|g' \
+  's|](docker-entrypoint\.sh)|](https://github.com/aharbii/movie-finder-frontend/blob/main/docker-entrypoint.sh)|g'
 
 # ── Copy and fix: services/chain.md ──────────────────────────────────────────
 echo "Copying backend/chain/README.md..."
@@ -158,13 +170,15 @@ echo "Copying backend/CONTRIBUTING.md..."
 cp "$REPO_ROOT/backend/CONTRIBUTING.md" "$DOCS_DIR/contributing/backend.md"
 rewrite_links "$DOCS_DIR/contributing/backend.md" \
   's|](\.\.\/docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](\.\.\/docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](\.\.\/docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](\.\.\/README\.md)|](../services/backend.md)|g' \
   's|](chain/README\.md)|](../services/chain.md)|g' \
   's|](imdbapi/README\.md)|](../services/imdbapi.md)|g' \
-  's|](rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g'
+  's|](rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
+  's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
+  's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g'
 
 # ── Copy and fix: contributing/frontend.md ───────────────────────────────────
 echo "Copying frontend/CONTRIBUTING.md..."
@@ -173,10 +187,11 @@ rewrite_links "$DOCS_DIR/contributing/frontend.md" \
   's|](\.\.\/CONTRIBUTING\.md)|](index.md)|g' \
   's|](CONTRIBUTING\.md)|](index.md)|g' \
   's|](\.\.\/docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](\.\.\/docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
+  's|](\.\.\/docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](docs\/devops-setup\.md|](../devops/setup.md|g' \
-  's|](docs\/devops\/setup\.md)|](../devops/setup.md)|g' \
-  's|](\.\.\/README\.md)|](../services/frontend.md)|g'
+  's|](docs\/devops\/setup\.md|](../devops/setup.md|g' \
+  's|](\.\.\/README\.md)|](../services/frontend.md)|g' \
+  's|setup\.md#9-jenkins--credentials|setup.md#9-jenkins-credentials|g'
 
 # ── Render PlantUML diagrams ──────────────────────────────────────────────────
 # Source files (*.puml) are committed; PNGs are generated here and gitignored.
