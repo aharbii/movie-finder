@@ -18,6 +18,9 @@
 //   • Any v* tag
 //   • Manual "Build with Parameters"
 //
+// Repo-side guards skip PR and non-main branch jobs if Jenkins multibranch
+// discovery is broader than the intended root deployment pipeline scope.
+//
 // Jenkins credentials required (Manage Jenkins → Credentials → Global):
 //   acr-login-server        Secret Text      Full ACR hostname, e.g. myacr.azurecr.io
 //   acr-credentials         Username+Pass    SP App ID (user) + client secret (pass)
@@ -62,7 +65,23 @@ pipeline {
     stages {
 
         // ------------------------------------------------------------------ //
+        stage('CI Eligibility') {
+            steps {
+                script {
+                    if (shouldRunPipeline()) {
+                        echo "Root CI enabled for ${env.GIT_TAG_NAME ?: env.BRANCH_NAME}."
+                    } else {
+                        echo "Root CI skipped for ${env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : "branch ${env.BRANCH_NAME}"}."
+                    }
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------ //
         stage('Checkout') {
+            when {
+                expression { shouldRunPipeline() }
+            }
             steps {
                 checkout([
                     $class: 'GitSCM',
@@ -82,6 +101,9 @@ pipeline {
 
         // ------------------------------------------------------------------ //
         stage('Resolve Tag') {
+            when {
+                expression { shouldRunPipeline() }
+            }
             steps {
                 script {
                     // Use git tag if on a release tag, otherwise use short SHA.
@@ -93,6 +115,9 @@ pipeline {
 
         // ------------------------------------------------------------------ //
         stage('Build Images') {
+            when {
+                expression { shouldRunPipeline() }
+            }
             environment {
                 ACR_SERVER      = credentials('acr-login-server')
                 ACR_CREDENTIALS = credentials('acr-credentials')
@@ -157,7 +182,9 @@ pipeline {
         stage('Deploy to Staging') {
             when {
                 expression {
-                    return params.DEPLOY_STAGING && (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
+                    return shouldRunPipeline() &&
+                        params.DEPLOY_STAGING &&
+                        (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
                 }
             }
             environment {
@@ -196,7 +223,9 @@ pipeline {
         stage('Production Gate') {
             when {
                 expression {
-                    return params.DEPLOY_PRODUCTION && (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
+                    return shouldRunPipeline() &&
+                        params.DEPLOY_PRODUCTION &&
+                        (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
                 }
             }
             steps {
@@ -214,7 +243,9 @@ pipeline {
         stage('Deploy to Production') {
             when {
                 expression {
-                    return params.DEPLOY_PRODUCTION && (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
+                    return shouldRunPipeline() &&
+                        params.DEPLOY_PRODUCTION &&
+                        (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
                 }
             }
             environment {
@@ -270,4 +301,15 @@ pipeline {
             }
         }
     }
+}
+
+// -------------------------------------------------------------------------- //
+def shouldRunPipeline() {
+    if (env.ROOT_CI_ELIGIBLE?.trim()) {
+        return env.ROOT_CI_ELIGIBLE == 'true'
+    }
+
+    def eligible = !env.CHANGE_ID && (env.BRANCH_NAME == 'main' || env.GIT_TAG_NAME)
+    env.ROOT_CI_ELIGIBLE = eligible.toString()
+    return eligible
 }
