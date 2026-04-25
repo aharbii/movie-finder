@@ -17,7 +17,6 @@
 //   • Push to main (via GitHub webhook or polling)
 //   • Any v* tag
 //   • Manual "Build with Parameters"
-//
 // Jenkins credentials required (Manage Jenkins → Credentials → Global):
 //   acr-login-server        Secret Text      Full ACR hostname, e.g. myacr.azurecr.io
 //   acr-credentials         Username+Pass    SP App ID (user) + client secret (pass)
