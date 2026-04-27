@@ -10,6 +10,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Root Docker Compose, Jenkins, and GitHub Actions now pass the backend
+  `WITH_PROVIDERS` build arg so chain provider SDKs are installed by selected
+  runtime bundle instead of all optional packages
+- Root environment template now exposes targeted chain runtime settings for
+  classifier, reasoning, embedding, and vector-store providers
 - Root `Jenkinsfile` — orchestrates the full release pipeline across all submodules:
   parallel Docker image builds for backend and frontend (pushed to Azure Container
   Registry), automated staging deploy, manual production gate, and production deploy
