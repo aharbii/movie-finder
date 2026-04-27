@@ -49,6 +49,11 @@ pipeline {
             defaultValue: false,
             description: 'Request manual production deployment gate after staging.'
         )
+        choice(
+            name: 'WITH_PROVIDERS',
+            choices: ['default-cloud', 'ollama-qdrant', 'cloud', 'local', 'all-providers'],
+            description: 'Backend chain provider SDK bundle installed at Docker build time.'
+        )
     }
 
     environment {
@@ -106,6 +111,7 @@ pipeline {
                             sh """
                                 docker build \
                                     --cache-from ${env.ACR_SERVER}/${env.BACKEND_IMAGE}:latest \
+                                    --build-arg WITH_PROVIDERS=${params.WITH_PROVIDERS} \
                                     -t ${fullImage} \
                                     backend/
                             """

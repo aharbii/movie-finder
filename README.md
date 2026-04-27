@@ -78,7 +78,7 @@ cp .env.example .env
 $EDITOR .env
 # Required secrets (see Environment variables below):
 #   DB_PASSWORD, APP_SECRET_KEY,
-#   ANTHROPIC_API_KEY, OPENAI_API_KEY,
+#   provider keys for your selected CLASSIFIER/REASONING/EMBEDDING providers,
 #   QDRANT_URL, QDRANT_API_KEY_RO
 
 # 3. Build and start all services
@@ -93,7 +93,7 @@ make up
 
 The backend container runs `alembic upgrade head` automatically before starting. On first run with a fresh database this adds ~15-30 seconds before the backend is ready.
 
-> **Qdrant is not included in docker-compose.** The backend always connects to the production Qdrant Cloud cluster. Obtain `QDRANT_URL` and `QDRANT_API_KEY_RO` from the RAG team.
+> **Qdrant is not included in docker-compose.** The default backend profile connects to Qdrant Cloud. Provider SDKs are installed at image build time through `WITH_PROVIDERS`, so choose a bundle that matches your runtime env vars.
 
 ---
 
@@ -131,22 +131,31 @@ See [`movie-finder-frontend`](https://github.com/aharbii/movie-finder-frontend) 
 
 Copy `.env.example` to `.env` and fill in all values. Never commit `.env`.
 
-| Variable                 | Required | Description                                    |
-| ------------------------ | -------- | ---------------------------------------------- |
-| `DB_PASSWORD`            | Yes      | PostgreSQL password                            |
-| `DATABASE_URL`           | Yes      | Full PostgreSQL connection URL                 |
-| `APP_SECRET_KEY`         | Yes      | JWT signing secret (`openssl rand -hex 32`)    |
-| `ANTHROPIC_API_KEY`      | Yes      | Claude models (LangGraph chain)                |
-| `OPENAI_API_KEY`         | Yes      | OpenAI text-embedding-3-large (RAG search)     |
-| `QDRANT_URL`             | Yes      | Qdrant Cloud cluster URL (from RAG team)       |
-| `QDRANT_API_KEY_RO`      | Yes      | Qdrant Cloud read-only API key (from RAG team) |
-| `QDRANT_COLLECTION_NAME` | Yes      | Collection name — default: `movies`            |
-| `LANGCHAIN_API_KEY`      | No       | LangSmith tracing (optional observability)     |
-| `CORS_ORIGINS`           | Yes      | JSON array of allowed browser origins          |
-| `GLOBAL_RATE_LIMIT`      | No       | Global API fallback rate limit                 |
-| `AUTH_RATE_LIMIT`        | No       | Login/token route rate limit                   |
-| `CHAT_RATE_LIMIT`        | No       | Authenticated chat route rate limit            |
-| `MAX_MESSAGE_LENGTH`     | No       | Maximum accepted user message length           |
+| Variable                   | Required | Description                                                          |
+| -------------------------- | -------- | -------------------------------------------------------------------- |
+| `WITH_PROVIDERS`           | Yes      | Backend build bundle, default `default-cloud`; use `ollama-qdrant` for Ollama + Qdrant |
+| `DB_PASSWORD`              | Yes      | PostgreSQL password                                                  |
+| `DATABASE_URL`             | Yes      | Full PostgreSQL connection URL                                       |
+| `APP_SECRET_KEY`           | Yes      | JWT signing secret (`openssl rand -hex 32`)                          |
+| `CLASSIFIER_PROVIDER`      | Yes      | `anthropic`, `openai`, `groq`, `together`, `ollama`, or `google`     |
+| `CLASSIFIER_MODEL`         | Yes      | Lightweight classifier/confirmation model                            |
+| `REASONING_PROVIDER`       | Yes      | `anthropic`, `openai`, `groq`, `together`, `ollama`, or `google`     |
+| `REASONING_MODEL`          | Yes      | Reasoning and Q&A model                                              |
+| `EMBEDDING_PROVIDER`       | Yes      | `openai`, `ollama`, `sentence-transformers`, or `huggingface`        |
+| `EMBEDDING_MODEL`          | Yes      | Query embedding model; must match RAG ingestion                      |
+| `EMBEDDING_DIMENSION`      | Yes      | Query embedding dimension; must match RAG ingestion                  |
+| `VECTOR_STORE`             | Yes      | `qdrant`, `chromadb`, `pinecone`, or `pgvector`                      |
+| `VECTOR_COLLECTION_PREFIX` | Yes      | Final target is `{prefix}_{sanitized_model}_{dimension}`             |
+| `QDRANT_URL`               | if qdrant | Qdrant Cloud cluster URL                                             |
+| `QDRANT_API_KEY_RO`        | if qdrant | Qdrant Cloud read-only API key                                       |
+| Provider API keys          | by provider | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`, `TOGETHER_API_KEY`, `GOOGLE_API_KEY` |
+| `OLLAMA_BASE_URL`          | if ollama | Docker-reachable Ollama endpoint                                     |
+| `LANGSMITH_API_KEY`        | No       | LangSmith tracing (optional observability)                           |
+| `CORS_ORIGINS`             | Yes      | JSON array of allowed browser origins                                |
+| `GLOBAL_RATE_LIMIT`        | No       | Global API fallback rate limit                                       |
+| `AUTH_RATE_LIMIT`          | No       | Login/token route rate limit                                         |
+| `CHAT_RATE_LIMIT`          | No       | Authenticated chat route rate limit                                  |
+| `MAX_MESSAGE_LENGTH`       | No       | Maximum accepted user message length                                 |
 
 The `imdbapi.dev` REST API requires no authentication.
 The backend container applies `alembic upgrade head` during startup before the
