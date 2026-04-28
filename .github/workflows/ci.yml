@@ -17,6 +17,10 @@
 #   AZURE_TENANT_ID           Azure tenant ID
 #   AZURE_SP_CLIENT_ID        Service principal App ID for Azure CLI
 #   AZURE_SP_CLIENT_SECRET    Service principal client secret for Azure CLI
+#   DB_ADMIN_USERNAME         PostgreSQL administrator username
+#   DB_ADMIN_PASSWORD         PostgreSQL administrator password
+#   APP_SECRET_KEY            Backend JWT signing key
+#   Provider/vector secrets matching infrastructure/docs/provider-runtime-contract.md
 #
 # Required GitHub environments (Settings → Environments):
 #   staging     — no protection rules required (auto-deploy on main)
@@ -49,6 +53,50 @@ on:
           - local
           - all-providers
         description: Backend chain provider SDK bundle installed at Docker build time.
+      classifier_provider:
+        type: choice
+        default: anthropic
+        options: [anthropic, openai, groq, together, ollama, google]
+        description: CLASSIFIER_PROVIDER for the backend runtime.
+      classifier_model:
+        type: string
+        default: claude-haiku-4-5-20251001
+        description: CLASSIFIER_MODEL for the backend runtime.
+      reasoning_provider:
+        type: choice
+        default: anthropic
+        options: [anthropic, openai, groq, together, ollama, google]
+        description: REASONING_PROVIDER for the backend runtime.
+      reasoning_model:
+        type: string
+        default: claude-sonnet-4-6
+        description: REASONING_MODEL for the backend runtime.
+      embedding_provider:
+        type: choice
+        default: openai
+        options: [openai, ollama, sentence-transformers, huggingface, google]
+        description: EMBEDDING_PROVIDER for query-time embeddings.
+      embedding_model:
+        type: string
+        default: text-embedding-3-large
+        description: EMBEDDING_MODEL shared with RAG ingestion.
+      embedding_dimension:
+        type: string
+        default: "3072"
+        description: EMBEDDING_DIMENSION shared with RAG ingestion.
+      vector_store:
+        type: choice
+        default: qdrant
+        options: [qdrant, chromadb, pinecone, pgvector]
+        description: VECTOR_STORE for the backend runtime.
+      vector_collection_prefix:
+        type: string
+        default: movies
+        description: VECTOR_COLLECTION_PREFIX shared with RAG ingestion.
+      ollama_base_url:
+        type: string
+        default: http://localhost:11434
+        description: OLLAMA_BASE_URL when an Ollama provider is selected.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -133,9 +181,73 @@ jobs:
         run: docker logout "${{ secrets.ACR_LOGIN_SERVER }}" || true
 
   # -------------------------------------------------------------------------- #
+  provision-staging:
+    name: Provision Staging
+    needs: [resolve-tag, build]
+    runs-on: ubuntu-latest
+    environment: staging
+    if: >
+      (github.event_name == 'push' &&
+       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_staging == 'true')
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_SP_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_SP_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_environment: staging
+      TF_VAR_backend_image_tag: ${{ needs.resolve-tag.outputs.build_tag }}
+      TF_VAR_frontend_image_tag: ${{ needs.resolve-tag.outputs.build_tag }}
+      TF_VAR_acr_admin_enabled: "true"
+      TF_VAR_db_admin_username: ${{ secrets.DB_ADMIN_USERNAME }}
+      TF_VAR_db_admin_password: ${{ secrets.DB_ADMIN_PASSWORD }}
+      TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
+      TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      TF_VAR_groq_api_key: ${{ secrets.GROQ_API_KEY }}
+      TF_VAR_together_api_key: ${{ secrets.TOGETHER_API_KEY }}
+      TF_VAR_google_api_key: ${{ secrets.GOOGLE_API_KEY }}
+      TF_VAR_qdrant_url: ${{ secrets.QDRANT_URL }}
+      TF_VAR_qdrant_api_key_ro: ${{ secrets.QDRANT_API_KEY_RO }}
+      TF_VAR_qdrant_api_key_rw: ${{ secrets.QDRANT_API_KEY_RW }}
+      TF_VAR_pinecone_api_key: ${{ secrets.PINECONE_API_KEY }}
+      TF_VAR_pgvector_dsn: ${{ secrets.PGVECTOR_DSN }}
+      TF_VAR_langsmith_api_key: ${{ secrets.LANGSMITH_API_KEY }}
+      TF_VAR_classifier_provider: ${{ inputs.classifier_provider || vars.CLASSIFIER_PROVIDER || 'anthropic' }}
+      TF_VAR_classifier_model: ${{ inputs.classifier_model || vars.CLASSIFIER_MODEL || 'claude-haiku-4-5-20251001' }}
+      TF_VAR_reasoning_provider: ${{ inputs.reasoning_provider || vars.REASONING_PROVIDER || 'anthropic' }}
+      TF_VAR_reasoning_model: ${{ inputs.reasoning_model || vars.REASONING_MODEL || 'claude-sonnet-4-6' }}
+      TF_VAR_embedding_provider: ${{ inputs.embedding_provider || vars.EMBEDDING_PROVIDER || 'openai' }}
+      TF_VAR_embedding_model: ${{ inputs.embedding_model || vars.EMBEDDING_MODEL || 'text-embedding-3-large' }}
+      TF_VAR_embedding_dimension: ${{ inputs.embedding_dimension || vars.EMBEDDING_DIMENSION || '3072' }}
+      TF_VAR_vector_store: ${{ inputs.vector_store || vars.VECTOR_STORE || 'qdrant' }}
+      TF_VAR_vector_collection_prefix: ${{ inputs.vector_collection_prefix || vars.VECTOR_COLLECTION_PREFIX || 'movies' }}
+      TF_VAR_ollama_base_url: ${{ inputs.ollama_base_url || vars.OLLAMA_BASE_URL || 'http://localhost:11434' }}
+      TF_VAR_cors_origins: ${{ vars.CORS_ORIGINS || '[]' }}
+      TF_VAR_global_rate_limit: ${{ vars.GLOBAL_RATE_LIMIT || '100/minute' }}
+      TF_VAR_auth_rate_limit: ${{ vars.AUTH_RATE_LIMIT || '5/minute' }}
+      TF_VAR_chat_rate_limit: ${{ vars.CHAT_RATE_LIMIT || '20/minute' }}
+      TF_VAR_max_message_length: ${{ vars.MAX_MESSAGE_LENGTH || '2000' }}
+      TF_VAR_langsmith_tracing: ${{ vars.LANGSMITH_TRACING || 'false' }}
+      TF_VAR_langsmith_endpoint: ${{ vars.LANGSMITH_ENDPOINT || 'https://api.smith.langchain.com' }}
+      TF_VAR_langsmith_project: ${{ vars.LANGSMITH_PROJECT || 'movie-finder' }}
+    steps:
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Terraform apply staging
+        run: |
+          cd infrastructure
+          make init
+          make apply
+
+  # -------------------------------------------------------------------------- #
   deploy-staging:
     name: Deploy to Staging
-    needs: [resolve-tag, build]
+    needs: [resolve-tag, build, provision-staging]
     runs-on: ubuntu-latest
     environment: staging
     if: >
@@ -175,9 +287,72 @@ jobs:
         run: az logout || true
 
   # -------------------------------------------------------------------------- #
+  provision-production:
+    name: Provision Production
+    needs: [resolve-tag, build, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_production == 'true')
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_SP_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_SP_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_environment: production
+      TF_VAR_backend_image_tag: ${{ needs.resolve-tag.outputs.build_tag }}
+      TF_VAR_frontend_image_tag: ${{ needs.resolve-tag.outputs.build_tag }}
+      TF_VAR_acr_admin_enabled: "true"
+      TF_VAR_db_admin_username: ${{ secrets.DB_ADMIN_USERNAME }}
+      TF_VAR_db_admin_password: ${{ secrets.DB_ADMIN_PASSWORD }}
+      TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
+      TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      TF_VAR_groq_api_key: ${{ secrets.GROQ_API_KEY }}
+      TF_VAR_together_api_key: ${{ secrets.TOGETHER_API_KEY }}
+      TF_VAR_google_api_key: ${{ secrets.GOOGLE_API_KEY }}
+      TF_VAR_qdrant_url: ${{ secrets.QDRANT_URL }}
+      TF_VAR_qdrant_api_key_ro: ${{ secrets.QDRANT_API_KEY_RO }}
+      TF_VAR_qdrant_api_key_rw: ${{ secrets.QDRANT_API_KEY_RW }}
+      TF_VAR_pinecone_api_key: ${{ secrets.PINECONE_API_KEY }}
+      TF_VAR_pgvector_dsn: ${{ secrets.PGVECTOR_DSN }}
+      TF_VAR_langsmith_api_key: ${{ secrets.LANGSMITH_API_KEY }}
+      TF_VAR_classifier_provider: ${{ inputs.classifier_provider || vars.CLASSIFIER_PROVIDER || 'anthropic' }}
+      TF_VAR_classifier_model: ${{ inputs.classifier_model || vars.CLASSIFIER_MODEL || 'claude-haiku-4-5-20251001' }}
+      TF_VAR_reasoning_provider: ${{ inputs.reasoning_provider || vars.REASONING_PROVIDER || 'anthropic' }}
+      TF_VAR_reasoning_model: ${{ inputs.reasoning_model || vars.REASONING_MODEL || 'claude-sonnet-4-6' }}
+      TF_VAR_embedding_provider: ${{ inputs.embedding_provider || vars.EMBEDDING_PROVIDER || 'openai' }}
+      TF_VAR_embedding_model: ${{ inputs.embedding_model || vars.EMBEDDING_MODEL || 'text-embedding-3-large' }}
+      TF_VAR_embedding_dimension: ${{ inputs.embedding_dimension || vars.EMBEDDING_DIMENSION || '3072' }}
+      TF_VAR_vector_store: ${{ inputs.vector_store || vars.VECTOR_STORE || 'qdrant' }}
+      TF_VAR_vector_collection_prefix: ${{ inputs.vector_collection_prefix || vars.VECTOR_COLLECTION_PREFIX || 'movies' }}
+      TF_VAR_ollama_base_url: ${{ inputs.ollama_base_url || vars.OLLAMA_BASE_URL || 'http://localhost:11434' }}
+      TF_VAR_cors_origins: ${{ vars.CORS_ORIGINS || '[]' }}
+      TF_VAR_global_rate_limit: ${{ vars.GLOBAL_RATE_LIMIT || '100/minute' }}
+      TF_VAR_auth_rate_limit: ${{ vars.AUTH_RATE_LIMIT || '5/minute' }}
+      TF_VAR_chat_rate_limit: ${{ vars.CHAT_RATE_LIMIT || '20/minute' }}
+      TF_VAR_max_message_length: ${{ vars.MAX_MESSAGE_LENGTH || '2000' }}
+      TF_VAR_langsmith_tracing: ${{ vars.LANGSMITH_TRACING || 'false' }}
+      TF_VAR_langsmith_endpoint: ${{ vars.LANGSMITH_ENDPOINT || 'https://api.smith.langchain.com' }}
+      TF_VAR_langsmith_project: ${{ vars.LANGSMITH_PROJECT || 'movie-finder' }}
+    steps:
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Terraform apply production
+        run: |
+          cd infrastructure
+          make init
+          make apply
+
+  # -------------------------------------------------------------------------- #
   deploy-production:
     name: Deploy to Production
-    needs: [resolve-tag, deploy-staging]
+    needs: [resolve-tag, provision-production]
     runs-on: ubuntu-latest
     environment: production        # requires manual approval (configure in GitHub Environments)
     if: >

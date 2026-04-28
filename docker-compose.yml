@@ -94,12 +94,11 @@ services:
     container_name: movie-finder-backend
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
       # Always point the app at the compose-internal postgres service.
       # This overrides DATABASE_URL from .env (which may point to localhost).
       DATABASE_URL: "postgresql://${DB_USER:-movie_finder}:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/${DB_NAME:-movie_finder}"
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY is required}
 
       # Defaults for app runtime settings (override via .env if needed).
       APP_ENV:  ${APP_ENV:-production}
@@ -108,6 +107,10 @@ services:
       # CORS must explicitly allow the frontend origin.
       # Override in .env for production domains.
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost","http://localhost:80"]}
+      GLOBAL_RATE_LIMIT: ${GLOBAL_RATE_LIMIT:-100/minute}
+      AUTH_RATE_LIMIT: ${AUTH_RATE_LIMIT:-5/minute}
+      CHAT_RATE_LIMIT: ${CHAT_RATE_LIMIT:-20/minute}
+      MAX_MESSAGE_LENGTH: ${MAX_MESSAGE_LENGTH:-2000}
 
       # Chain provider/vector-store contract. The backend image installs only
       # the provider SDK bundle selected by WITH_PROVIDERS at build time.
@@ -120,11 +123,8 @@ services:
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-3072}
       VECTOR_STORE: ${VECTOR_STORE:-qdrant}
       VECTOR_COLLECTION_PREFIX: ${VECTOR_COLLECTION_PREFIX:-movies}
-      VECTOR_STORE_URL: ${VECTOR_STORE_URL:-}
-      VECTOR_STORE_API_KEY: ${VECTOR_STORE_API_KEY:-}
       QDRANT_URL: ${QDRANT_URL:-}
       QDRANT_API_KEY_RO: ${QDRANT_API_KEY_RO:-}
-      QDRANT_COLLECTION_PREFIX: ${QDRANT_COLLECTION_PREFIX:-movies}
       CHROMADB_PERSIST_PATH: ${CHROMADB_PERSIST_PATH:-outputs/chromadb/local}
       PINECONE_API_KEY: ${PINECONE_API_KEY:-}
       PINECONE_INDEX_NAME: ${PINECONE_INDEX_NAME:-movie-finder-rag}
@@ -139,6 +139,10 @@ services:
       TOGETHER_API_KEY: ${TOGETHER_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://localhost:11434}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-movie-finder}
     depends_on:
       postgres:
         condition: service_healthy

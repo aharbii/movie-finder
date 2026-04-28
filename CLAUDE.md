@@ -77,7 +77,7 @@ This project supports multiple AI coding agents. Each reads its own context file
 ### Claude Code skills and slash commands
 
 `.claude/skills/` — preferred format with YAML frontmatter, subagent isolation, path scoping.
-`.claude/commands/` — legacy format, still works, used for workflow commands.
+`.claude/commands/` — workflow command definitions.
 Type `/` in Claude Code to see available skills and commands.
 
 | Skill / Command               | Phase          | Where to run            |
