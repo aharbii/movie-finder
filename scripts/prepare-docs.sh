@@ -114,8 +114,7 @@ rewrite_links "$DOCS_DIR/services/backend.md" \
   's|](CONTRIBUTING\.md)|](../contributing/backend.md)|g' \
   's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
   's|](app/README\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/app/README.md)|g' \
-  's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g' \
-  's|](\.\./infrastructure/docs/qdrant-secret-model\.md)|](https://github.com/aharbii/movie-finder-infrastructure/blob/main/docs/qdrant-secret-model.md)|g' \
+  's|](\.\./infrastructure/docs/provider-runtime-contract\.md)|](https://github.com/aharbii/movie-finder-infrastructure/blob/main/docs/provider-runtime-contract.md)|g' \
   's|](\.\.\/docs\/devops-setup\.md|](../devops/setup.md|g' \
   's|](\.\.\/docs\/devops\/setup\.md|](../devops/setup.md|g' \
   's|](docs/devops-setup\.md|](../devops/setup.md|g' \
@@ -178,7 +177,6 @@ rewrite_links "$DOCS_DIR/contributing/backend.md" \
   's|](imdbapi/README\.md)|](../services/imdbapi.md)|g' \
   's|](rag_ingestion/README\.md)|](../services/rag-ingestion.md)|g' \
   's|](INTEGRATION\.md)|](https://github.com/aharbii/movie-finder-backend/blob/main/INTEGRATION.md)|g' \
-  's|](deploy/provision\.sh)|](https://github.com/aharbii/movie-finder-backend/blob/main/deploy/provision.sh)|g'
 
 # ── Copy and fix: contributing/frontend.md ───────────────────────────────────
 echo "Copying frontend/CONTRIBUTING.md..."

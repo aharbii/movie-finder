@@ -90,7 +90,7 @@ All required env vars must be set in your shell before running Codex (load from 
 
 Available MCP servers: `qdrant-evaluator`, `github`, `postgres`, `kaggle`, `langsmith`, `azure`.
 
-### Prompts for Codex CLI (legacy — prefer skills)
+### Prompts for Codex CLI
 
 Copy-paste prompts in `ai-context/prompts/` (available in each submodule):
 - `ai-context/prompts/implement.md` — implementation workflow

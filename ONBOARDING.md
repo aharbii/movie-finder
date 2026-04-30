@@ -380,7 +380,7 @@ cd movie-finder-backend
 
 make init           # build dev image, create .env from template
 $EDITOR .env        # fill in: APP_SECRET_KEY, QDRANT_URL, QDRANT_API_KEY_RO,
-                    #           QDRANT_COLLECTION_NAME, ANTHROPIC_API_KEY, OPENAI_API_KEY
+                    #           VECTOR_COLLECTION_PREFIX, ANTHROPIC_API_KEY, OPENAI_API_KEY
 make up             # starts postgres + backend
                     # Backend: http://localhost:8000
                     # Swagger: http://localhost:8000/docs
@@ -399,7 +399,7 @@ git clone --recurse-submodules https://github.com/aharbii/movie-finder-chain.git
 cd movie-finder-chain
 
 make init           # build image, create .env, install git hook
-$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RO, QDRANT_COLLECTION_NAME,
+$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RO, VECTOR_COLLECTION_PREFIX,
                     #           OPENAI_API_KEY, ANTHROPIC_API_KEY
 make editor-up      # start container (stays running for VS Code attach + interactive use)
 
@@ -429,7 +429,7 @@ git clone https://github.com/aharbii/movie-finder-rag.git
 cd movie-finder-rag
 
 make init           # build image, create .env, install git hook
-$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RW, QDRANT_COLLECTION_NAME,
+$EDITOR .env        # fill in: QDRANT_URL, QDRANT_API_KEY_RW, VECTOR_COLLECTION_PREFIX,
                     #           OPENAI_API_KEY, KAGGLE_API_TOKEN
 make editor-up      # start workspace container
 

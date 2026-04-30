@@ -344,8 +344,8 @@ Each repository is released independently following [Semantic Versioning](https:
 vMAJOR.MINOR.PATCH
 
 MAJOR — breaking API or behaviour change
-MINOR — new feature, backwards compatible
-PATCH — bug fix, backwards compatible
+MINOR — new non-breaking feature
+PATCH — non-breaking bug fix
 ```
 
 **Steps:**
