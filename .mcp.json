@@ -1,60 +1,34 @@
 {
   "mcpServers": {
-    "qdrant-evaluator": {
-      "type": "stdio",
-      "command": "uv",
-      "args": [
-        "run",
-        "src/qdrant/main.py"
-      ],
-      "cwd": "${workspaceFolder}/mcp/qdrant-explorer",
-      "env": {
-        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
-        "OPENAI_EMBEDDING_MODEL": "${env:OPENAI_EMBEDDING_MODEL}",
-        "QDRANT_API_KEY_RO": "${env:QDRANT_API_KEY_RO}",
-        "QDRANT_COLLECTION_NAME": "${env:QDRANT_COLLECTION_NAME}",
-        "QDRANT_URL": "${env:QDRANT_URL}"
-      }
-    },
     "github": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
-      }
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) npx -y @modelcontextprotocol/server-github"]
+    },
+    "qdrant-evaluator": {
+      "type": "stdio",
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && exec uv run --directory \"$MOVIE_FINDER_ROOT/mcp/qdrant-explorer\" src/qdrant/main.py"]
     },
     "postgres": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-postgres",
-        "${env:DATABASE_URL}"
-      ]
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && exec npx -y @modelcontextprotocol/server-postgres \"$DATABASE_URL\""]
     },
     "kaggle": {
       "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "kaggle-mcp"
-      ],
-      "env": {
-        "KAGGLE_API_TOKEN": "${env:KAGGLE_API_TOKEN}"
-      }
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && exec uvx kaggle-mcp"]
     },
     "azure": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@azure/mcp@latest",
-        "server",
-        "start"
-      ]
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && exec npx -y @azure/mcp@latest server start"]
+    },
+    "jenkins-local": {
+      "type": "stdio",
+      "command": "/bin/sh",
+      "args": ["-c", ". ~/.zshenv && exec npx -y @kud/mcp-jenkins@latest"]
     }
   }
 }

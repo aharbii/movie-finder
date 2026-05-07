@@ -1,8 +1,41 @@
 {
   "mcpServers": {
     "azure": {
-      "command": "npx",
-      "args": ["-y", "@azure/mcp@latest", "server", "start"]
+      "args": ["-y", "@azure/mcp@latest", "server", "start"],
+      "command": "npx"
+    },
+    "github": {
+      "args": [
+        "-c",
+        "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) npx -y @modelcontextprotocol/server-github"
+      ],
+      "command": "sh"
+    },
+    "jenkins-local": {
+      "args": [
+        "-c",
+        ". ~/.zshenv && exec npx -y @kud/mcp-jenkins@latest"
+      ],
+      "command": "sh"
+    },
+    "kaggle": {
+      "args": ["kaggle-mcp"],
+      "command": "uvx"
+    },
+    "postgres": {
+      "args": [
+        "-c",
+        "npx -y @modelcontextprotocol/server-postgres \"$DATABASE_URL\""
+      ],
+      "command": "sh"
+    },
+    "qdrant-evaluator": {
+      "args": [
+        "run",
+        "src/qdrant/main.py"
+      ],
+      "command": "uv",
+      "cwd": "${MOVIE_FINDER_ROOT}/mcp/qdrant-explorer"
     }
   }
 }

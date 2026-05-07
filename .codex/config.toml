@@ -1,6 +1,6 @@
 # Movie Finder — Codex project configuration
 # Project-scoped config. Loaded only when repo is marked trusted.
-# Mirrors .mcp.json (Claude Code) so all MCP servers are available in both tools.
+# Mirrors .mcp.json (Claude Code) and .gemini/settings.json so all MCP servers are available in all tools.
 
 # ---------------------------------------------------------------------------
 # Model & behaviour
@@ -9,18 +9,22 @@ approval_policy = "on-request"
 model_reasoning_effort = "high"
 
 [features]
-multi_agent   = true   # stable — enables subagent collaboration
+multi_agent = true      # stable — enables subagent collaboration
 smart_approvals = false # experimental — enable when ready
 
 # ---------------------------------------------------------------------------
 # MCP servers
-# All required env vars must exist in your shell (load from .env before codex).
+# All required env vars must exist in your shell (~/.zshrc).
 # ---------------------------------------------------------------------------
+
+[mcp_servers.github]
+command = "/bin/sh"
+args = ["-c", "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) npx -y @modelcontextprotocol/server-github"]
 
 [mcp_servers.qdrant-evaluator]
 command = "uv"
-args    = ["run", "src/qdrant/main.py"]
-cwd     = "mcp/qdrant-explorer"
+args = ["run", "src/qdrant/main.py"]
+cwd = "mcp/qdrant-explorer"
 env_vars = [
   "OPENAI_API_KEY",
   "OPENAI_EMBEDDING_MODEL",
@@ -29,25 +33,23 @@ env_vars = [
   "QDRANT_URL",
 ]
 
-[mcp_servers.github]
-command  = "npx"
-args     = ["-y", "@modelcontextprotocol/server-github"]
-env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
-
 # postgres MCP takes DATABASE_URL as a positional CLI argument.
-# Set DATABASE_URL in your environment; Codex will substitute it at launch.
+# Codex does not expand ${env:...} placeholders in args, so use a shell wrapper.
 [mcp_servers.postgres]
-command = "npx"
-args    = ["-y", "@modelcontextprotocol/server-postgres"]
+command = "/bin/sh"
+args = ["-lc", "exec npx -y @modelcontextprotocol/server-postgres \"$DATABASE_URL\""]
 env_vars = ["DATABASE_URL"]
-# NOTE: if the server requires DATABASE_URL as a positional arg rather than
-# an env var, run: codex mcp add postgres -- npx -y @modelcontextprotocol/server-postgres $DATABASE_URL
 
 [mcp_servers.kaggle]
-command  = "uvx"
-args     = ["kaggle-mcp"]
+command = "uvx"
+args = ["kaggle-mcp"]
 env_vars = ["KAGGLE_API_TOKEN"]
 
 [mcp_servers.azure]
 command = "npx"
-args    = ["-y", "@azure/mcp@latest", "server", "start"]
+args = ["-y", "@azure/mcp@latest", "server", "start"]
+
+[mcp_servers.jenkins-local]
+command = "npx"
+args = ["-y", "@kud/mcp-jenkins@latest"]
+env_vars = ["MCP_JENKINS_URL", "MCP_JENKINS_USER", "MCP_JENKINS_API_TOKEN"]
